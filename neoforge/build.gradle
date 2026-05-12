@@ -1,211 +1,159 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import net.fabricmc.loom.task.RemapJarTask
-import net.fabricmc.loom.task.RemapSourcesJarTask
-
-buildscript {
-	repositories {
-		mavenCentral()
-		gradlePluginPortal()
-	}
-	dependencies {
-		classpath 'com.modrinth.minotaur:Minotaur:2.4.3'
-		classpath 'gradle.plugin.com.matthewprenger:CurseGradle:1.4.0'
-	}
-}
-
 plugins {
-	id "dev.architectury.loom"
-	id "com.github.johnrengelman.shadow" version "7.1.2"
+    id 'multiloader-loader'
+    id 'net.neoforged.moddev'
+    id 'com.modrinth.minotaur' version '2.4.3' apply false
+    id 'com.matthewprenger.cursegradle' version '1.4.0' apply false
 }
 if (System.getenv("MODRINTH_TOKEN")) {
-	apply plugin: "com.modrinth.minotaur"
+    apply plugin: "com.modrinth.minotaur"
 }
 if (System.getenv("CURSEFORGE_TOKEN")) {
-	apply plugin: "com.matthewprenger.cursegradle"
-}
-evaluationDependsOn ':xplat'
-
-architectury {
-	platformSetupLoomIde()
-	neoForge()
+    apply plugin: "com.matthewprenger.cursegradle"
 }
 
-loom {
-	accessWidenerPath = project(":xplat").loom.accessWidenerPath
+neoForge {
+    version = neoforge_version
+    def at = project(':xplat').file('src/main/resources/META-INF/accesstransformer.cfg')
+    if (at.exists()) {
+        accessTransformers.from(at.absolutePath)
+    }
+    runs {
+        configureEach {
+            systemProperty('neoforge.enabledGameTestNamespaces', mod_id)
+            ideName = "NeoForge ${it.name.capitalize()} (${project.path})" // Unify the run config names with fabric
+        }
+        client {
+            client()
+        }
+        data {
+            clientData()
 
-	mods {
-		main {
-			sourceSet project(':xplat').sourceSets.main
-		}
-	}
+            // DataGen can be run by - "./gradlew :neoforge:runData" in Terminal.
+            // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.
+            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+        }
+        server {
+            server()
+        }
+    }
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
+    }
 }
 
-repositories {
-	maven {
-		url "https://maven.neoforged.net/releases/"
-		content {
-			includeGroupAndSubgroups "net.neoforged"
-			includeGroupAndSubgroups "cpw.mods"
-		}
-	}
+def loaderAttribute = Attribute.of('io.github.mcgradleconventions.loader', String)
+['apiElements', 'runtimeElements', 'sourcesElements', 'javadocElements'].each { variant ->
+    configurations.named("$variant") {
+        attributes {
+            attribute(loaderAttribute, 'neoforge')
+        }
+    }
 }
-
-configurations {
-	common
-	shadowCommon
-	compileClasspath.extendsFrom common
-	runtimeClasspath.extendsFrom common
-	developmentNeoForge.extendsFrom common
-}
-
-dependencies {
-	minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
-	mappings loom.officialMojangMappings()
-
-	neoForge "net.neoforged:neoforge:${rootProject.neoforge_version}"
-
-	common(project(path: ":xplat", configuration: "namedElements")) { transitive = false }
-	shadowCommon(project(path: ":xplat", configuration: "transformProductionNeoForge")) { transitive = false }
-}
-
-processResources {
-	inputs.property "version", project.version
-
-	filesMatching("META-INF/neoforge.mods.toml") {
-		expand "version": project.version
-	}
-}
-
-def shadowJar = tasks.named('shadowJar', ShadowJar)
-
-shadowJar.configure { ShadowJar jar ->
-	jar.exclude "fabric.mod.json"
-	jar.exclude "architectury.common.json"
-
-	jar.configurations = [project.configurations.shadowCommon]
-	jar.archiveClassifier = "dev-shadow"
-}
-
-def remapJar = tasks.named('remapJar', RemapJarTask)
-
-remapJar.configure { RemapJarTask jar ->
-	dependsOn shadowJar
-	jar.inputFile.convention(shadowJar.flatMap {it.archiveFile })
-}
-
-def sourcesJar = tasks.named('sourcesJar', Jar)
-
-sourcesJar.configure { Jar jar ->
-	def commonSources = project(":xplat").tasks.named("sourcesJar", Jar)
-	dependsOn commonSources
-	jar.from zipTree(commonSources.flatMap { it.archiveFile })
-	//TODO: Fix this in a better way that doesn't lead to stripping out the jemi sources
-	jar.exclude 'dev/emi/emi/jemi/**'
+sourceSets.configureEach {
+    [it.compileClasspathConfigurationName, it.runtimeClasspathConfigurationName, it.getTaskName(null, 'jarJar')].each { variant ->
+        configurations.named("$variant") {
+            attributes {
+                attribute(loaderAttribute, 'neoforge')
+            }
+        }
+    }
 }
 
 def filteredSourcesJar = tasks.register('filteredSourcesJar', Jar, {
-	archiveClassifier = 'filtered-sources'
-	def remapSourcesJar = tasks.named('remapSourcesJar', RemapSourcesJarTask)
-	dependsOn remapSourcesJar
-	from zipTree(remapSourcesJar.flatMap { it.archiveFile })
-	exclude 'dev/emi/emi/jemi/**'
+    archiveClassifier = 'filtered-sources'
+    def sourcesJar = tasks.named('sourcesJar', Jar)
+    dependsOn sourcesJar
+    from zipTree(sourcesJar.flatMap { it.archiveFile })
+    exclude 'dev/emi/emi/jemi/**'
 })
 
 def apiJar = tasks.register('apiJar', Jar, {
-	archiveClassifier = 'api'
-	dependsOn remapJar
-	from zipTree(remapJar.flatMap { it.archiveFile })
-	include 'emi.mixins.json'
-	include 'emi-neoforge.mixins.json'
-	include 'emi.accesswidener'
-	include 'dev/emi/emi/api/**'
-	exclude 'dev/emi/emi/api/EmiRecipeHandler**'
-	exclude 'dev/emi/emi/api/stack/FluidEmiStack**'
-	exclude 'dev/emi/emi/api/stack/ItemEmiStack**'
-	exclude 'dev/emi/emi/api/stack/EmptyEmiStack**'
-	exclude 'dev/emi/emi/api/stack/TagEmiIngredient**'
-	exclude 'dev/emi/emi/api/stack/ListEmiIngredient**'
+    archiveClassifier = 'api'
+    def jarTask = tasks.named('jar', Jar)
+    dependsOn jarTask
+    from zipTree(jarTask.flatMap { it.archiveFile })
+    include 'emi.mixins.json'
+    include 'emi-neoforge.mixins.json'
+    include 'emi.accesswidener'
+    include 'dev/emi/emi/api/**'
+    exclude 'dev/emi/emi/api/EmiRecipeHandler**'
+    exclude 'dev/emi/emi/api/stack/FluidEmiStack**'
+    exclude 'dev/emi/emi/api/stack/ItemEmiStack**'
+    exclude 'dev/emi/emi/api/stack/EmptyEmiStack**'
+    exclude 'dev/emi/emi/api/stack/TagEmiIngredient**'
+    exclude 'dev/emi/emi/api/stack/ListEmiIngredient**'
 })
 
 tasks.named("build").configure {
-	dependsOn(filteredSourcesJar, apiJar)
-}
-
-components.java {
-	withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
-		skip()
-	}
+    dependsOn(filteredSourcesJar, apiJar)
 }
 
 publishing {
-	publications {
-		register('maven', MavenPublication) {
-			artifactId = "${rootProject.name}-${project.name}"
-			version = project.ext.mavenVersion
-			artifact(remapJar) {
-				builtBy remapJar
-				classifier ''
-			}
-			artifact(filteredSourcesJar) {
-				builtBy filteredSourcesJar
-				classifier 'sources'
-			}
-			artifact(apiJar) {
-				builtBy apiJar
-				classifier 'api'
-			}
-		}
-	}
-	setupRepositories(repositories)
+    publications {
+        register('maven', MavenPublication) {
+            artifactId = "${rootProject.name}-${project.name}"
+            version = project.version
+            artifact(tasks.named('jar'))
+            artifact(filteredSourcesJar) {
+                classifier = 'sources'
+            }
+            artifact(apiJar) {
+                classifier = 'api'
+            }
+        }
+    }
+    setupRepositories(repositories)
 }
 
 void setupRepositories(RepositoryHandler repositories) {
-	if (project.hasProperty("mavenUrl")) {
-		repositories.maven {
-			url project.mavenUrl
-			credentials {
-				username project.mavenUsername
-				password project.mavenPassword
-			}
-		}
-	}
+    if (project.hasProperty("mavenUrl")) {
+        repositories.maven {
+            url project.mavenUrl
+            credentials {
+                username project.mavenUsername
+                password project.mavenPassword
+            }
+        }
+    }
 }
 
 if (System.getenv("MODRINTH_TOKEN")) {
-	modrinth {
-		token = System.getenv("MODRINTH_TOKEN")
-		projectId = 'emi'
-		versionNumber = project.version
-		versionName = project.version
-		versionType = 'release'
-		uploadFile = remapJar
-		gameVersions = [rootProject.minecraft_version]
-		loaders = ['neoforge']
-		detectLoaders = false
-		changelog = file('../CHANGELOG.md').text
-	}
+    modrinth {
+        token = System.getenv("MODRINTH_TOKEN")
+        projectId = 'emi'
+        versionNumber = project.version
+        versionName = project.version
+        versionType = 'release'
+        uploadFile = tasks.named('jar')
+        gameVersions = [rootProject.minecraft_version]
+        loaders = ['neoforge']
+        detectLoaders = false
+        changelog = file('../CHANGELOG.md').text
+    }
 }
 
 if (System.getenv("CURSEFORGE_TOKEN")) {
-	curseforge {
-		apiKey = System.getenv("CURSEFORGE_TOKEN")
-		project {
-			id = '580555'
-			releaseType = 'release'
-			changelogType = 'markdown'
-			changelog = file('../CHANGELOG.md')
+    curseforge {
+        apiKey = System.getenv("CURSEFORGE_TOKEN")
+        project {
+            id = '580555'
+            releaseType = 'release'
+            changelogType = 'markdown'
+            changelog = file('../CHANGELOG.md')
 
-			addGameVersion rootProject.minecraft_version
-			addGameVersion 'NeoForge'
+            addGameVersion rootProject.minecraft_version
+            addGameVersion 'NeoForge'
 
-			mainArtifact(remapJar.get().archiveFile) {
-				displayName = 'emi-' + project.version
-			}
-		}
-		options {
-			javaIntegration = false
-			forgeGradleIntegration = false
-			javaVersionAutoDetect = false
-		}
-	}
+            mainArtifact(tasks.named('jar').get().archiveFile) {
+                displayName = 'emi-' + project.version
+            }
+        }
+        options {
+            javaIntegration = false
+            forgeGradleIntegration = false
+            javaVersionAutoDetect = false
+        }
+    }
 }

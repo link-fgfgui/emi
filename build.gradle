@@ -1,42 +1,4 @@
 plugins {
-	id "architectury-plugin" version "3.4-SNAPSHOT"
-	id "dev.architectury.loom" version "1.14-SNAPSHOT" apply false
-}
-
-architectury {
-	minecraft = rootProject.minecraft_version
-}
-
-allprojects {
-	apply plugin: "java"
-	apply plugin: "architectury-plugin"
-	apply plugin: "maven-publish"
-
-	architectury {
-		compileOnly()
-	}
-
-	base.archivesName = rootProject.archives_base_name
-	ext.mavenVersion = "${rootProject.mod_version}"
-	if (System.getenv("RELEASE") == null) {
-		ext.mavenVersion += "-SNAPSHOT"
-	}
-	ext.mavenVersion += "+${rootProject.minecraft_version}"
-	version = "${project.ext.mavenVersion}+${project.name}"
-	group = rootProject.maven_group
-
-	repositories {
-		maven {
-			url = "https://maven.blamejared.com/"
-		}
-	}
-
-	tasks.withType(JavaCompile).configureEach({
-		options.encoding = "UTF-8"
-		options.release = 21
-	})
-
-	java {
-		withSourcesJar()
-	}
+    id 'fabric-loom' version '1.14-SNAPSHOT' apply false
+    id 'net.neoforged.moddev' version '2.0.141' apply false
 }

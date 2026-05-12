@@ -1,98 +1,106 @@
-import net.fabricmc.loom.task.RemapJarTask
-import net.fabricmc.loom.task.RemapSourcesJarTask
-
-apply plugin: "dev.architectury.loom"
-
-architectury {
-	common(rootProject.enabled_platforms.split(","))
+plugins {
+    id 'multiloader-common'
+    id 'net.neoforged.moddev'
 }
 
-loom {
-	accessWidenerPath = file("src/main/resources/emi.accesswidener")
+neoForge {
+    neoFormVersion = neo_form_version
 }
 
 dependencies {
-	minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
-	mappings loom.officialMojangMappings()
-
-	modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
-
-	modCompileOnly("mezz.jei:${rootProject.jei_version}") {
-		transitive = false
-	}
+    compileOnly group: 'org.spongepowered', name: 'mixin', version: '0.8.5'
+    compileOnly group: 'io.github.llamalad7', name: 'mixinextras-common', version: '0.3.5'
+    annotationProcessor group: 'io.github.llamalad7', name: 'mixinextras-common', version: '0.3.5'
+    compileOnly("mezz.jei:${jei_version}") { transitive = false }
 }
 
-processResources {
-	inputs.property "version", project(":fabric").version
-
-	filesMatching("fabric.mod.json") {
-		expand "version": project(":fabric").version
-	}
+configurations {
+    commonJava {
+        canBeResolved = false
+        canBeConsumed = true
+    }
+    commonResources {
+        canBeResolved = false
+        canBeConsumed = true
+    }
 }
 
-afterEvaluate {
-	configurations.default.extendsFrom = [configurations.namedElements]
+artifacts {
+    commonJava sourceSets.main.java.sourceDirectories.singleFile
+    commonResources sourceSets.main.resources.sourceDirectories.singleFile
+}
+
+def loaderAttribute = Attribute.of('io.github.mcgradleconventions.loader', String)
+['apiElements', 'runtimeElements', 'sourcesElements', 'javadocElements'].each { variant ->
+    configurations.named("$variant") {
+        attributes {
+            attribute(loaderAttribute, 'common')
+        }
+    }
+}
+sourceSets.configureEach {
+    [it.compileClasspathConfigurationName, it.runtimeClasspathConfigurationName].each { variant ->
+        configurations.named("$variant") {
+            attributes {
+                attribute(loaderAttribute, 'common')
+            }
+        }
+    }
 }
 
 def filteredSourcesJar = tasks.register('filteredSourcesJar', Jar, {
-	archiveClassifier = 'filtered-sources'
-	def remapSourcesJar = tasks.named('remapSourcesJar', RemapSourcesJarTask)
-	dependsOn remapSourcesJar
-	from zipTree(remapSourcesJar.flatMap { it.archiveFile })
-	exclude 'dev/emi/emi/jemi/**'
+    archiveClassifier = 'filtered-sources'
+    def sourcesJar = tasks.named('sourcesJar', Jar)
+    dependsOn sourcesJar
+    from zipTree(sourcesJar.flatMap { it.archiveFile })
+    exclude 'dev/emi/emi/jemi/**'
 })
 
 def apiJar = tasks.register('apiJar', Jar, {
-	archiveClassifier = "api"
-	def remapJar = tasks.named('remapJar', RemapJarTask)
-	dependsOn remapJar
-	from zipTree(remapJar.flatMap { it.archiveFile })
-	include 'fabric.mod.json'
-	include 'emi.mixins.json'
-	include 'emi.accesswidener'
-	include 'dev/emi/emi/api/**'
-	exclude 'dev/emi/emi/api/EmiRecipeHandler**'
-	exclude 'dev/emi/emi/api/stack/FluidEmiStack**'
-	exclude 'dev/emi/emi/api/stack/ItemEmiStack**'
-	exclude 'dev/emi/emi/api/stack/EmptyEmiStack**'
-	exclude 'dev/emi/emi/api/stack/TagEmiIngredient**'
-	exclude 'dev/emi/emi/api/stack/ListEmiIngredient**'
+    archiveClassifier = "api"
+    def jarTask = tasks.named('jar', Jar)
+    dependsOn jarTask
+    from zipTree(jarTask.flatMap { it.archiveFile })
+    include 'emi.mixins.json'
+    include 'emi.accesswidener'
+    include 'dev/emi/emi/api/**'
+    exclude 'dev/emi/emi/api/EmiRecipeHandler**'
+    exclude 'dev/emi/emi/api/stack/FluidEmiStack**'
+    exclude 'dev/emi/emi/api/stack/ItemEmiStack**'
+    exclude 'dev/emi/emi/api/stack/EmptyEmiStack**'
+    exclude 'dev/emi/emi/api/stack/TagEmiIngredient**'
+    exclude 'dev/emi/emi/api/stack/ListEmiIngredient**'
 })
 
 tasks.named("build").configure {
-	dependsOn(filteredSourcesJar, apiJar)
+    dependsOn(filteredSourcesJar, apiJar)
 }
 
 publishing {
-	publications {
-		register('maven', MavenPublication) {
-			artifactId = "${rootProject.name}-xplat-mojmap"
-			version = project.ext.mavenVersion
-			artifact(remapJar) {
-				builtBy remapJar
-				classifier = null
-			}
-			artifact(filteredSourcesJar) {
-				builtBy filteredSourcesJar
-				classifier = 'sources'
-			}
-			artifact(apiJar) {
-				builtBy apiJar
-				classifier = 'api'
-			}
-		}
-	}
-	setupRepositories(repositories)
+    publications {
+        register('maven', MavenPublication) {
+            artifactId = "${rootProject.name}-xplat-mojmap"
+            version = project.version
+            artifact(tasks.named('jar'))
+            artifact(filteredSourcesJar) {
+                classifier = 'sources'
+            }
+            artifact(apiJar) {
+                classifier = 'api'
+            }
+        }
+    }
+    setupRepositories(repositories)
 }
 
 void setupRepositories(RepositoryHandler repositories) {
-	if (project.hasProperty("mavenUrl")) {
-		repositories.maven {
-			url project.mavenUrl
-			credentials {
-				username project.mavenUsername
-				password project.mavenPassword
-			}
-		}
-	}
+    if (project.hasProperty("mavenUrl")) {
+        repositories.maven {
+            url project.mavenUrl
+            credentials {
+                username project.mavenUsername
+                password project.mavenPassword
+            }
+        }
+    }
 }
