@@ -540,7 +540,7 @@ public class VanillaPlugin implements EmiPlugin {
 	private static void addWorldInteraction(EmiRegistry registry, Set<Item> hiddenItems, List<Item> dyeableItems) {
 		EmiStack concreteWater = EmiStack.of(Fluids.WATER);
 		concreteWater.setRemainder(concreteWater);
-		ColorCollection.zipApply((powder, concrete) -> addConcreteRecipe(registry, powder, concreteWater, concrete), Blocks.CONCRETE_POWDER, Blocks.CONCRETE);
+		ColorCollection.zipApply(Blocks.CONCRETE_POWDER, Blocks.CONCRETE, (powder, concrete) -> addConcreteRecipe(registry, powder, concreteWater, concrete));
 
 		EmiIngredient axes = damagedTool(getPreferredTag(List.of(
 				"minecraft:axes", "c:axes", "c:tools/axes", "fabric:axes", "forge:tools/axes"

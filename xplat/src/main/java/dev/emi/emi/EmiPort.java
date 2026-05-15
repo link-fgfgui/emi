@@ -47,8 +47,11 @@ import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.minecraft.world.level.material.Fluid;
 import org.jetbrains.annotations.Nullable;
 
+import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
+import net.minecraft.client.renderer.StagedVertexBuffer;
 import dev.emi.emi.api.stack.Comparison;
 import dev.emi.emi.mixin.accessor.SmithingTransformRecipeAccessor;
 import dev.emi.emi.registry.EmiRecipes;
@@ -120,7 +123,13 @@ public final class EmiPort {
 
 	public static void draw(BufferBuilder bufferBuilder, RenderType renderType) {
 		MeshData meshData = bufferBuilder.buildOrThrow();
-		renderType.draw(meshData);
+		GpuBuffer vertexBuffer = RenderSystem.getDevice().createBuffer(() -> "EmiPort", GpuBuffer.USAGE_VERTEX, meshData.vertexBuffer());
+		RenderSystem.AutoStorageIndexBuffer autoIndices = RenderSystem.getSequentialBuffer(meshData.drawState().mode());
+		GpuBuffer indexBuffer = autoIndices.getBuffer(meshData.drawState().indexCount());
+		StagedVertexBuffer.ExecuteInfo info = new StagedVertexBuffer.ExecuteInfo(
+			vertexBuffer, indexBuffer, autoIndices.type(), 0, 0, meshData.drawState().indexCount());
+		renderType.drawFromBuffer(info);
+		meshData.close();
 	}
 
 	public static int getGuiScale(Minecraft client) {

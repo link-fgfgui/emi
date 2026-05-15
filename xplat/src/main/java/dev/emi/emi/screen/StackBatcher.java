@@ -4,38 +4,28 @@ package dev.emi.emi.screen;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.StagedVertexBuffer;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexSorting;
-import dev.emi.emi.EmiPort;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.config.EmiConfig;
 import dev.emi.emi.mixin.accessor.ItemStackRenderStateAccessor;
@@ -67,9 +57,10 @@ public class StackBatcher {
 		void renderForBatch(MultiBufferSource vcp, GuiGraphicsExtractor draw, int x, int y, int z, float delta);
 	}
 
-	private final BatcherVertexConsumerProvider imm;
+	private final StagedVertexBuffer stagedBuffer;
+	private final Map<RenderType, StagedVertexBuffer.Draw> draws = new LinkedHashMap<>();
+	private final MultiBufferSource imm;
 	private final MultiBufferSource unlitFacade;
-	private final Map<RenderType, MeshData> buffers = new LinkedHashMap<>();
 	private final Set<TextureAtlasSprite> spritesToUpdate = Sets.newHashSet();
 	private boolean populated = false;
 	private boolean dirty = false;
@@ -84,20 +75,9 @@ public class StackBatcher {
 	}
 
 	public StackBatcher() {
-		Map<RenderType, ByteBufferBuilder> buffers = new HashMap<>();
-		assign(buffers, Sheets.cutoutBlockItemSheet());
-		assign(buffers, Sheets.translucentItemSheet());
-		assign(buffers, RenderTypes.glint());
-		assign(buffers, RenderTypes.entityGlint());
-		for (RenderType layer : EXTRA_RENDER_LAYERS) {
-			assign(buffers, layer);
-		}
-		imm = new BatcherVertexConsumerProvider(new ByteBufferBuilder(256), buffers);
-		unlitFacade = new UnlitFacade(imm);
-	}
-
-	private void assign(Map<RenderType, ByteBufferBuilder> buffers, RenderType layer) {
-		buffers.put(layer, new ByteBufferBuilder(layer.bufferSize()));
+		this.stagedBuffer = new StagedVertexBuffer(() -> "EMI StackBatcher", 256);
+		this.imm = new BatcherVertexConsumerProvider();
+		this.unlitFacade = new UnlitFacade(imm);
 	}
 
 	public boolean isPopulated() {
@@ -116,6 +96,9 @@ public class StackBatcher {
 			populated = false;
 			dirty = false;
 			spritesToUpdate.clear();
+			stagedBuffer.endDraw();
+			stagedBuffer.endFrame();
+			draws.clear();
 		}
 	}
 
@@ -182,35 +165,20 @@ public class StackBatcher {
 			}
 		}
 		if (!populated) {
-			bake();
+			stagedBuffer.upload();
 			populated = true;
 		}
-		Minecraft.getInstance().gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_3D);
+		Minecraft.getInstance().gameRenderer.lighting().setupFor(Lighting.Entry.ITEMS_3D);
 		Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
 		modelViewStack.pushMatrix();
 		modelViewStack.translate(x, y, 0);
-		for (Map.Entry<RenderType, MeshData> en : buffers.entrySet()) {
-			en.getKey().draw(en.getValue());
+		for (Map.Entry<RenderType, StagedVertexBuffer.Draw> en : draws.entrySet()) {
+			StagedVertexBuffer.ExecuteInfo info = stagedBuffer.getExecuteInfo(en.getValue());
+			if (info != null) {
+				en.getKey().drawFromBuffer(info);
+			}
 		}
 		modelViewStack.popMatrix();
-	}
-	
-	private void bake() {
-		imm.drawCurrentLayer();
-		buffers.values().forEach(MeshData::close);
-		buffers.clear();
-		for (Map.Entry<RenderType, BufferBuilder> entry : imm.getPendingLayerBuffers().entrySet()) {
-			bake(entry.getKey(), entry.getValue());
-		}
-		imm.getPendingLayerBuffers().clear();
-	}
-
-	public void bake(RenderType layer, BufferBuilder bldr) {
-		MeshData builtBuffer = bldr.build();
-		if (builtBuffer == null) {
-			return;
-		}
-		buffers.put(layer, builtBuffer);
 	}
 
 	public static class ClaimedCollection {
@@ -250,75 +218,15 @@ public class StackBatcher {
 		}
 	}
 
-	private static class BatcherVertexConsumerProvider implements MultiBufferSource {
-		protected final ByteBufferBuilder fallbackBuffer;
-		protected final Map<RenderType, ByteBufferBuilder> layerBuffers;
-		protected final Map<RenderType, BufferBuilder> pending = new HashMap<>();
-		protected RenderType currentLayer = null;
-
-		protected BatcherVertexConsumerProvider(ByteBufferBuilder fallbackBuffer, Map<RenderType, ByteBufferBuilder> layerBuffers) {
-			this.fallbackBuffer = fallbackBuffer;
-			this.layerBuffers = layerBuffers;
-		}
-
+	private class BatcherVertexConsumerProvider implements MultiBufferSource {
 		@Override
 		public VertexConsumer getBuffer(RenderType renderLayer) {
-			BufferBuilder bufferBuilder = this.pending.get(renderLayer);
-
-			if (bufferBuilder == null) {
-				ByteBufferBuilder allocator = this.layerBuffers.get(renderLayer);
-				if (allocator != null) {
-					bufferBuilder = new BufferBuilder(allocator, renderLayer.mode(), renderLayer.format());
-				} else {
-					if (this.currentLayer != null) {
-						this.draw(this.currentLayer);
-					}
-					bufferBuilder = new BufferBuilder(this.fallbackBuffer, renderLayer.mode(), renderLayer.format());
-					this.currentLayer = renderLayer;
-				}
-
-				this.pending.put(renderLayer, bufferBuilder);
+			StagedVertexBuffer.Draw draw = draws.get(renderLayer);
+			if (draw == null) {
+				draw = stagedBuffer.appendDraw(renderLayer.format(), renderLayer.mode());
+				draws.put(renderLayer, draw);
 			}
-
-			return bufferBuilder;
-		}
-
-		private ByteBufferBuilder getBufferInternal(RenderType layer) {
-			return this.layerBuffers.getOrDefault(layer, this.fallbackBuffer);
-		}
-
-		public void drawCurrentLayer() {
-			if (this.currentLayer != null) {
-				RenderType renderLayer = this.currentLayer;
-				if (!this.layerBuffers.containsKey(renderLayer)) {
-					this.draw(renderLayer);
-				}
-				this.currentLayer = null;
-			}
-		}
-
-		public void draw(RenderType layer) {
-			ByteBufferBuilder bufferAllocator = this.getBufferInternal(layer);
-			boolean isSameAsCurrentLayer = Objects.equals(this.currentLayer, layer);
-			if (!isSameAsCurrentLayer && bufferAllocator == this.fallbackBuffer) {
-				return;
-			}
-			BufferBuilder builder = this.pending.remove(layer);
-			if (builder == null) {
-				return;
-			}
-			MeshData buffer = builder.build();
-			if (buffer != null) {
-				buffer.sortQuads(bufferAllocator, VertexSorting.ORTHOGRAPHIC_Z);
-				layer.draw(buffer);
-			}
-			if (isSameAsCurrentLayer) {
-				this.currentLayer = null;
-			}
-		}
-
-		public Map<RenderType, BufferBuilder> getPendingLayerBuffers() {
-			return pending;
+			return stagedBuffer.getVertexBuilder(draw);
 		}
 	}
 
