@@ -1,13 +1,14 @@
 package dev.emi.emi.runtime;
 
 import java.io.File;
-import java.util.OptionalInt;
+import java.util.Optional;
 import java.util.function.Consumer;
 import net.minecraft.util.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderTarget;
@@ -22,6 +23,7 @@ import dev.emi.emi.EmiPort;
 import dev.emi.emi.config.EmiConfig;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
+import org.joml.Vector4f;
 
 public class EmiScreenshotRecorder {
 	private static final String SCREENSHOTS_DIRNAME = "screenshots";
@@ -44,12 +46,12 @@ public class EmiScreenshotRecorder {
 			scale = EmiConfig.recipeScreenshotScale;
 		}
 
-		RenderTarget framebuffer = new TextureTarget("EMI Screenshot", width * scale, height * scale, true);
+		RenderTarget framebuffer = new TextureTarget("EMI Screenshot", width * scale, height * scale, true, GpuFormat.RGBA8_UNORM);
 
 		GpuTexture colorTexture = framebuffer.getColorTexture();
 		if (colorTexture != null) {
-			try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder()
-					.createRenderPass(() -> "EMI Screenshot", framebuffer.getColorTextureView(), OptionalInt.of(0))) {
+				try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder()
+					.createRenderPass(() -> "EMI Screenshot", framebuffer.getColorTextureView(), Optional.of(new Vector4f(0, 0, 0, 0)))) {
 				Matrix4fStack view = RenderSystem.getModelViewStack();
 				view.pushMatrix();
 				view.identity();
@@ -61,7 +63,7 @@ public class EmiScreenshotRecorder {
 				ProjectionType backupProjType = RenderSystem.getProjectionType();
 
 				GpuBuffer projBuf = RenderSystem.getDevice().createBuffer(() -> "EMI Projection", GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_MAP_WRITE, 64);
-				try (GpuBuffer.MappedView mapped = RenderSystem.getDevice().createCommandEncoder().mapBuffer(projBuf, false, true)) {
+				try (GpuBufferSlice.MappedView mapped = projBuf.map(false, true)) {
 					new Matrix4f().identity().get(mapped.data());
 				}
 				RenderSystem.setProjectionMatrix(projBuf.slice(), ProjectionType.ORTHOGRAPHIC);
@@ -118,7 +120,7 @@ public class EmiScreenshotRecorder {
 			.createBuffer(() -> "EMI Screenshot buffer", usage, i * j * gputexture.getFormat().pixelSize());
 		CommandEncoder commandencoder = RenderSystem.getDevice().createCommandEncoder();
 		commandencoder.copyTextureToBuffer(gputexture, gpubuffer, 0, () -> {
-			try (GpuBuffer.MappedView mappedview = commandencoder.mapBuffer(gpubuffer, true, false)) {
+			try (GpuBufferSlice.MappedView mappedview = gpubuffer.map(true, false)) {
 				NativeImage nativeimage = new NativeImage(i, j, false);
 
 				for (int i1 = 0; i1 < j; i1++) {

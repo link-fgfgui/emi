@@ -125,7 +125,7 @@ public final class EmiPort {
 	public static void draw(BufferBuilder bufferBuilder, RenderType renderType) {
 		MeshData meshData = bufferBuilder.buildOrThrow();
 		GpuBuffer vertexBuffer = RenderSystem.getDevice().createBuffer(() -> "EmiPort", GpuBuffer.USAGE_VERTEX, meshData.vertexBuffer());
-		RenderSystem.AutoStorageIndexBuffer autoIndices = RenderSystem.getSequentialBuffer(meshData.drawState().mode());
+		RenderSystem.AutoStorageIndexBuffer autoIndices = RenderSystem.getSequentialBuffer(meshData.drawState().primitiveTopology());
 		GpuBuffer indexBuffer = autoIndices.getBuffer(meshData.drawState().indexCount());
 		StagedVertexBuffer.ExecuteInfo info = new StagedVertexBuffer.ExecuteInfo(
 			vertexBuffer, indexBuffer, autoIndices.type(), 0, 0, meshData.drawState().indexCount());

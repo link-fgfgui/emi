@@ -229,7 +229,7 @@ public class StackBatcher {
 		public VertexConsumer getBuffer(RenderType renderLayer) {
 			StagedVertexBuffer.Draw draw = draws.get(renderLayer);
 			if (draw == null) {
-				draw = stagedBuffer.appendDraw(renderLayer.format(), renderLayer.mode());
+				draw = stagedBuffer.appendDraw(renderLayer.format(), renderLayer.primitiveTopology());
 				draws.put(renderLayer, draw);
 			}
 			return stagedBuffer.getVertexBuilder(draw);
