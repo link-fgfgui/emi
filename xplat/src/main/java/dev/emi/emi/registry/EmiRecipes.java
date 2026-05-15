@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import net.minecraft.locale.Language;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.Recipe;
@@ -196,7 +197,7 @@ public class EmiRecipes {
 
 			for (EmiRecipeCategory category : byCategory.keySet()) {
 				String key = EmiUtil.translateId("emi.category.", category.getId());
-				if (category.getName().equals(EmiPort.translatable(key)) && !I18n.exists(key)) {
+				if (category.getName().equals(EmiPort.translatable(key)) && !Language.getInstance().has(key)) {
 					EmiReloadLog.warn("Untranslated recipe category " + category.getId());
 				}
 				List<EmiRecipe> cRecipes = byCategory.get(category);

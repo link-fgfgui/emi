@@ -14,6 +14,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.locale.Language;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -98,7 +99,7 @@ public class ConfigScreen extends Screen {
 		ConfigValue annot = field.getAnnotation(ConfigValue.class);
 		String key = "config.emi.tooltip." + annot.value().replace('-', '_');
 		Comment comment = field.getAnnotation(Comment.class);
-		if (I18n.exists(key)) {
+		if (Language.getInstance().has(key)) {
 			text = (List<ClientTooltipComponent>) (Object) Arrays.stream(I18n.get(key).split("\n"))
 				.map(EmiPort::literal).map(EmiTooltipComponents::of).toList();
 		} else if (comment != null) {
