@@ -52,6 +52,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
 import net.minecraft.client.renderer.StagedVertexBuffer;
+import net.minecraft.client.renderer.rendertype.PreparedRenderType;
 import dev.emi.emi.api.stack.Comparison;
 import dev.emi.emi.mixin.accessor.SmithingTransformRecipeAccessor;
 import dev.emi.emi.registry.EmiRecipes;
@@ -128,7 +129,8 @@ public final class EmiPort {
 		GpuBuffer indexBuffer = autoIndices.getBuffer(meshData.drawState().indexCount());
 		StagedVertexBuffer.ExecuteInfo info = new StagedVertexBuffer.ExecuteInfo(
 			vertexBuffer, indexBuffer, autoIndices.type(), 0, 0, meshData.drawState().indexCount());
-		renderType.drawFromBuffer(info);
+		PreparedRenderType prepared = renderType.prepare();
+		prepared.drawFromBuffer(info);
 		meshData.close();
 	}
 
@@ -206,7 +208,7 @@ public final class EmiPort {
 
 	public static @Nullable RecipeManager getRecipeManager() {
 		Minecraft client = Minecraft.getInstance();
-		if (client.isSingleplayer() && client.getSingleplayerServer() != null) {
+		if (client.getSingleplayerServer() != null) {
 			return client.getSingleplayerServer().getRecipeManager();
 		}
 		return null;

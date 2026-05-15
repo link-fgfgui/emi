@@ -3,6 +3,7 @@ package dev.emi.emi.screen;
 import java.util.List;
 import java.util.Objects;
 import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.resources.Identifier;
 import com.google.common.collect.Lists;
@@ -47,7 +48,7 @@ public class WidgetGroup implements WidgetHolder {
 		widgets.clear();
 		widgets.add(new RecipeBackground(-4, -4, width + 8, height + 8));
 		widgets.add(new TextWidget(EmiPort.ordered(EmiPort.translatable("emi.error.recipe.render")),
-			width / 2, height / 2 - 5, ChatFormatting.RED.getColor(), true).horizontalAlign(Alignment.CENTER));
+			width / 2, height / 2 - 5, TextColor.fromLegacyFormat(ChatFormatting.RED).getValue(), true).horizontalAlign(Alignment.CENTER));
 		widgets.add(new DrawableWidget(0, 0, width, height, (raw, mouseX, mouseY, delta) -> {})
 			.tooltip((i, j) -> EmiUtil.getStackTrace(e).stream()
 				.map(EmiPort::literal).map(EmiPort::ordered).map(ClientTooltipComponent::create).toList()));

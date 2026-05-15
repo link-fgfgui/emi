@@ -6,7 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTextTooltip;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import net.minecraft.client.renderer.MultiBufferSource;
+import dev.emi.emi.screen.StackBatcher.VertexConsumerProvider;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponentType;
@@ -132,7 +132,7 @@ public class ItemEmiStack extends EmiStack implements Batchable {
 	}
 	
 	@Override
-	public void renderForBatch(MultiBufferSource vcp, GuiGraphicsExtractor draw, int x, int y, int z, float delta) {
+	public void renderForBatch(VertexConsumerProvider vcp, GuiGraphicsExtractor draw, int x, int y, int z, float delta) {
 		unbatchable = true;
 	}
 

@@ -11,10 +11,10 @@ import java.util.Map;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.StagedVertexBuffer;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.PreparedRenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -54,13 +54,18 @@ public class StackBatcher {
 		boolean isSideLit();
 		boolean isUnbatchable();
 		void setUnbatchable();
-		void renderForBatch(MultiBufferSource vcp, GuiGraphicsExtractor draw, int x, int y, int z, float delta);
+		void renderForBatch(VertexConsumerProvider vcp, GuiGraphicsExtractor draw, int x, int y, int z, float delta);
+	}
+
+	@FunctionalInterface
+	public interface VertexConsumerProvider {
+		VertexConsumer getBuffer(RenderType renderType);
 	}
 
 	private final StagedVertexBuffer stagedBuffer;
 	private final Map<RenderType, StagedVertexBuffer.Draw> draws = new LinkedHashMap<>();
-	private final MultiBufferSource imm;
-	private final MultiBufferSource unlitFacade;
+	private final VertexConsumerProvider imm;
+	private final VertexConsumerProvider unlitFacade;
 	private final Set<TextureAtlasSprite> spritesToUpdate = Sets.newHashSet();
 	private boolean populated = false;
 	private boolean dirty = false;
@@ -175,7 +180,8 @@ public class StackBatcher {
 		for (Map.Entry<RenderType, StagedVertexBuffer.Draw> en : draws.entrySet()) {
 			StagedVertexBuffer.ExecuteInfo info = stagedBuffer.getExecuteInfo(en.getValue());
 			if (info != null) {
-				en.getKey().drawFromBuffer(info);
+				PreparedRenderType prepared = en.getKey().prepare();
+				prepared.drawFromBuffer(info);
 			}
 		}
 		modelViewStack.popMatrix();
@@ -218,7 +224,7 @@ public class StackBatcher {
 		}
 	}
 
-	private class BatcherVertexConsumerProvider implements MultiBufferSource {
+	private class BatcherVertexConsumerProvider implements VertexConsumerProvider {
 		@Override
 		public VertexConsumer getBuffer(RenderType renderLayer) {
 			StagedVertexBuffer.Draw draw = draws.get(renderLayer);
@@ -230,11 +236,11 @@ public class StackBatcher {
 		}
 	}
 
-	private static class UnlitFacade implements MultiBufferSource {
-		private final MultiBufferSource delegate;
+	private static class UnlitFacade implements VertexConsumerProvider {
+		private final VertexConsumerProvider delegate;
 		private final IdentityHashMap<VertexConsumer, VertexConsumer> cache = new IdentityHashMap<>();
 
-		public UnlitFacade(MultiBufferSource delegate) {
+		public UnlitFacade(VertexConsumerProvider delegate) {
 			this.delegate = delegate;
 		}
 
