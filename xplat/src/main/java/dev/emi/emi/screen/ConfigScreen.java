@@ -89,7 +89,7 @@ public class ConfigScreen extends Screen {
 	public void onClose() {
 		EmiConfig.writeConfig();
 		EmiSearch.update();
-		Minecraft.getInstance().setScreen(last);
+		Minecraft.getInstance().gui.setScreen(last);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -150,7 +150,7 @@ public class ConfigScreen extends Screen {
 		}));
 		this.addRenderableWidget(EmiPort.newButton(x + w / 2 + 2, height - 52, w / 2 - 24, 20, EmiPort.translatable("screen.emi.presets"), button -> {
 			Minecraft client = Minecraft.getInstance();
-			client.setScreen(new ConfigPresetScreen(this));
+			client.gui.setScreen(new ConfigPresetScreen(this));
 		}));
 		this.addRenderableWidget(new SizedButtonWidget(x + w - 20, height - 52, 20, 20, 164, 0, () -> true, widget -> {
 			EmiConfig.setGlobalState(!EmiConfig.useGlobalConfig);

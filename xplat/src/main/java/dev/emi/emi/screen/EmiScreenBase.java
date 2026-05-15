@@ -44,7 +44,7 @@ public class EmiScreenBase {
 	
 	public static EmiScreenBase getCurrent() {
 		Minecraft client = Minecraft.getInstance();
-		return of(client.screen);
+		return of(client.gui.screen());
 	}
 
 	public static <T extends Screen> void addScreenBoundsProvider(Class<T> clazz, EmiScreenBoundsProvider<T> provider) {

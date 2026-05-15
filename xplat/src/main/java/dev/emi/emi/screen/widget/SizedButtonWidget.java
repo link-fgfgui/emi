@@ -70,7 +70,7 @@ public class SizedButtonWidget extends Button {
 			context.push();
 			context.disableDepthTest();
 			Minecraft client = Minecraft.getInstance();
-			EmiRenderHelper.drawTooltip(client.screen, context, text.get().stream().map(EmiPort::ordered).map(ClientTooltipComponent::create).toList(), mouseX, mouseY);
+			EmiRenderHelper.drawTooltip(client.gui.screen(), context, text.get().stream().map(EmiPort::ordered).map(ClientTooltipComponent::create).toList(), mouseX, mouseY);
 			context.pop();
 		}
 	}

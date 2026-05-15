@@ -123,7 +123,7 @@ public class EmiScreenManager {
 
 	public static EmiSearchWidget search = new EmiSearchWidget(client.font, 0, 0, 160, 18);
 	public static SizedButtonWidget emi = new SizedButtonWidget(0, 0, 20, 20, 204, 0,
-			() -> true, (w) -> client.setScreen(new ConfigScreen(client.screen)),
+			() -> true, (w) -> client.gui.setScreen(new ConfigScreen(client.gui.screen())),
 			List.of(EmiPort.translatable("tooltip.emi.config", EmiRenderHelper.getEmiText())));
 	public static SizedButtonWidget tree = new SizedButtonWidget(0, 0, 20, 20, 184, 0,
 			() -> true, (w) -> EmiApi.viewRecipeTree(),
@@ -537,10 +537,10 @@ public class EmiScreenManager {
 
 	public static EmiStackInteraction getHoveredStack(int mouseX, int mouseY, boolean notClick,
 			boolean ignoreLastHoveredCraftable) {
-		if (client.screen == null) {
+		if (client.gui.screen() == null) {
 			return EmiStackInteraction.EMPTY;
 		}
-		EmiStackInteraction stack = EmiStackProviders.getStackAt(client.screen, mouseX, mouseY, notClick);
+		EmiStackInteraction stack = EmiStackProviders.getStackAt(client.gui.screen(), mouseX, mouseY, notClick);
 		if (!stack.isEmpty()) {
 			return stack;
 		}
@@ -735,7 +735,7 @@ public class EmiScreenManager {
 	private static void renderCurrentTooltip(EmiDrawContext context, int mouseX, int mouseY, float delta, EmiScreenBase base) {
 		try {
 			ItemStack cursor = ItemStack.EMPTY;
-			if (client.screen instanceof AbstractContainerScreen<?> handled) {
+			if (client.gui.screen() instanceof AbstractContainerScreen<?> handled) {
 				cursor = handled.getMenu().getCarried();
 			}
 			ScreenSpace space = getHoveredSpace(mouseX, mouseY);
@@ -1061,8 +1061,8 @@ public class EmiScreenManager {
 						} else if (panel.getType() == SidebarType.CHESS) {
 							EmiChess.drop(draggedStack, getHoveredStack(mx, my, true).getStack());
 						}
-					} else if (client.screen != null) {
-						if (EmiDragDropHandlers.dropStack(client.screen, draggedStack, mx, my)) {
+					} else if (client.gui.screen() != null) {
+						if (EmiDragDropHandlers.dropStack(client.gui.screen(), draggedStack, mx, my)) {
 							return true;
 						}
 					}
@@ -1095,7 +1095,7 @@ public class EmiScreenManager {
 			return false;
 		}
 		if (draggedStack.isEmpty() && button == 0) {
-			if (client.screen instanceof AbstractContainerScreen<?> handled) {
+			if (client.gui.screen() instanceof AbstractContainerScreen<?> handled) {
 				if (!handled.getMenu().getCarried().isEmpty()) {
 					return false;
 				}
@@ -1124,7 +1124,7 @@ public class EmiScreenManager {
 		if (EmiScreenManager.search.keyPressed(event) || EmiScreenManager.search.canConsumeInput()) {
 			return true;
 		}
-		if (hasFocusedTextField(client.screen, 10)) {
+		if (hasFocusedTextField(client.gui.screen(), 10)) {
 			return false;
 		}
 		if (EmiApi.isCheatMode() && EmiConfig.deleteCursorStack.matchesKey(event.key(), event.scancode())) {
@@ -1169,8 +1169,8 @@ public class EmiScreenManager {
 		}
 		boolean searchBreak = false;
 		if (function.apply(EmiConfig.focusSearch)) {
-			if (client.screen != null) {
-				client.screen.setFocused(search);
+			if (client.gui.screen() != null) {
+				client.gui.screen().setFocused(search);
 				EmiPort.focus(search, true);
 				searchBreak = true;
 			}
@@ -1340,7 +1340,7 @@ public class EmiScreenManager {
 		EmiConfig.enabled = !EmiConfig.enabled;
 		EmiConfig.writeConfig();
 		if (notify && !EmiConfig.enabled && EmiConfig.helpLevel.has(HelpLevel.VERBOSE)) {
-			client.getToastManager().addToast(new DisabledToast());
+			client.gui.toastManager().addToast(new DisabledToast());
 		}
 		if (EmiConfig.enabled) {
 			forceRecalculate();
@@ -1353,7 +1353,7 @@ public class EmiScreenManager {
 		}
 		ItemStack is = stack.getItemStack().copy();
 		is.setCount(amount);
-		if (mode == 1 && client.player.getAbilities().instabuild && client.screen instanceof CreativeModeInventoryScreen) {
+		if (mode == 1 && client.player.getAbilities().instabuild && client.gui.screen() instanceof CreativeModeInventoryScreen) {
 			client.player.containerMenu.setCarried(is);
 			return true;
 		}
@@ -1374,7 +1374,7 @@ public class EmiScreenManager {
 	}
 	
 	private static boolean deleteCursor(int mx, int my) {
-		if (client.screen instanceof AbstractContainerScreen<?> handled) {
+		if (client.gui.screen() instanceof AbstractContainerScreen<?> handled) {
 			ItemStack cursor = handled.getMenu().getCarried();
 			ScreenSpace space = getHoveredSpace(mx, my);
 			if (!cursor.isEmpty() && space != null && space.getType() == SidebarType.INDEX) {
@@ -1451,7 +1451,7 @@ public class EmiScreenManager {
 			this.sidebarPage = page;
 			forceRecalculate |= getType() == SidebarType.CHESS;
 			if (forceRecalculate) {
-				if (client.screen != null) {
+				if (client.gui.screen() != null) {
 					// Force recalculation
 					lastWidth = -1;
 					recalculate();

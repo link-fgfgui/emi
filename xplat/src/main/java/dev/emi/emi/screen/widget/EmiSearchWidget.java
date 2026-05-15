@@ -13,7 +13,7 @@ import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.Mth;
-import net.minecraft.util.Tuple;
+import com.mojang.datafixers.util.Pair;
 import org.lwjgl.glfw.GLFW;
 
 import com.google.common.collect.Lists;
@@ -28,7 +28,7 @@ public class EmiSearchWidget extends EditBox {
 	private static final Pattern ESCAPE = Pattern.compile("\\\\.");
 	private List<String> searchHistory = Lists.newArrayList();
 	private int searchHistoryIndex = 0;
-	private List<Tuple<Integer, Style>> styles;
+	private List<Pair<Integer, Style>> styles;
 	private long lastClick = 0;
 	private String last = "";
 	private long lastRender = System.currentTimeMillis();
@@ -48,29 +48,28 @@ public class EmiSearchWidget extends EditBox {
 			int s = 0;
 			int last = 0;
 			for (; s < styles.size(); s++) {
-				Tuple<Integer, Style> style = styles.get(s);
-				int end = style.getA();
+				Pair<Integer, Style> style = styles.get(s);
+				int end = style.getFirst();
 				if (end > stringStart) {
 					if (end - stringStart >= string.length()) {
-						text = EmiPort.literal(string.substring(0, string.length()), style.getB());
-						// Skip second loop
+						text = EmiPort.literal(string.substring(0, string.length()), style.getSecond());
 						s = styles.size();
 						break;
 					}
-					text = EmiPort.literal(string.substring(0, end - stringStart), style.getB());
+					text = EmiPort.literal(string.substring(0, end - stringStart), style.getSecond());
 					last = end - stringStart;
 					s++;
 					break;
 				}
 			}
 			for (; s < styles.size(); s++) {
-				Tuple<Integer, Style> style = styles.get(s);
-				int end = style.getA();
+				Pair<Integer, Style> style = styles.get(s);
+				int end = style.getFirst();
 				if (end - stringStart >= string.length()) {
-					EmiPort.append(text, EmiPort.literal(string.substring(last, string.length()), style.getB()));
+					EmiPort.append(text, EmiPort.literal(string.substring(last, string.length()), style.getSecond()));
 					break;
 				}
-				EmiPort.append(text, EmiPort.literal(string.substring(last, end - stringStart), style.getB()));
+				EmiPort.append(text, EmiPort.literal(string.substring(last, end - stringStart), style.getSecond()));
 				last = end - stringStart;
 			}
 			return EmiPort.ordered(text);
@@ -83,17 +82,17 @@ public class EmiSearchWidget extends EditBox {
 			}
 			EmiScreenManager.updateSearchSidebar();
 			Matcher matcher = EmiSearch.TOKENS.matcher(string);
-			List<Tuple<Integer, Style>> styles = Lists.newArrayList();
+			List<Pair<Integer, Style>> styles = Lists.newArrayList();
 			int last = 0;
 			while (matcher.find()) {
 				int start = matcher.start();
 				int end = matcher.end();
 				if (last < start) {
-					styles.add(new Tuple<Integer, Style>(start, Style.EMPTY.applyFormat(ChatFormatting.WHITE)));
+					styles.add(Pair.of(start, Style.EMPTY.applyFormat(ChatFormatting.WHITE)));
 				}
 				String group = matcher.group();
 				if (group.startsWith("-")) {
-					styles.add(new Tuple<Integer, Style>(start + 1, Style.EMPTY.applyFormat(ChatFormatting.RED)));
+					styles.add(Pair.of(start + 1, Style.EMPTY.applyFormat(ChatFormatting.RED)));
 					start++;
 					group = group.substring(1);
 				}
@@ -101,30 +100,30 @@ public class EmiSearchWidget extends EditBox {
 				int subStart = type.prefix.length();
 				if (group.length() > 1 + subStart && group.substring(subStart).startsWith("/") && group.endsWith("/")) {
 					int rOff = start + subStart + 1;
-					styles.add(new Tuple<Integer, Style>(rOff, type.slashColor));
+					styles.add(Pair.of(rOff, type.slashColor));
 					Matcher rMatcher = ESCAPE.matcher(string.substring(rOff, end - 1));
 					int rLast = 0;
 					while (rMatcher.find()) {
 						int rStart = rMatcher.start();
 						int rEnd = rMatcher.end();
 						if (rLast < rStart) {
-							styles.add(new Tuple<Integer, Style>(rStart + rOff, type.regexColor));
+							styles.add(Pair.of(rStart + rOff, type.regexColor));
 						}
-						styles.add(new Tuple<Integer, Style>(rEnd + rOff, type.escapeColor));
+						styles.add(Pair.of(rEnd + rOff, type.escapeColor));
 						rLast = rEnd;
 					}
 					if (rLast < end - 1) {
-						styles.add(new Tuple<Integer, Style>(end - 1, type.regexColor));
-					}
-					styles.add(new Tuple<Integer, Style>(end, type.slashColor));
-				} else {
-					styles.add(new Tuple<Integer, Style>(end, type.color));
+						styles.add(Pair.of(end - 1, type.regexColor));
 				}
-
-				last = end;
+				styles.add(Pair.of(end, type.slashColor));
+			} else {
+				styles.add(Pair.of(end, type.color));
 			}
-			if (last < string.length()) {
-				styles.add(new Tuple<Integer, Style>(string.length(), Style.EMPTY.applyFormat(ChatFormatting.WHITE)));
+
+			last = end;
+		}
+		if (last < string.length()) {
+			styles.add(Pair.of(string.length(), Style.EMPTY.applyFormat(ChatFormatting.WHITE)));
 			}
 			this.styles = styles;
 			EmiSearch.search(string);

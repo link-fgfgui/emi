@@ -149,7 +149,6 @@ public class EmiReloadManager {
 					List<EmiPluginContainer> plugins = Lists.newArrayList();
 					plugins.addAll(EmiAgnos.getPlugins().stream()
 						.sorted((a, b) -> Integer.compare(entrypointPriority(a), entrypointPriority(b))).toList());
-
 					EmiInitRegistry initRegistry = new EmiInitRegistryImpl();
 					for (EmiPluginContainer container : plugins) {
 						step(EmiPort.literal("Initializing plugin from " + container.id()), 5_000);

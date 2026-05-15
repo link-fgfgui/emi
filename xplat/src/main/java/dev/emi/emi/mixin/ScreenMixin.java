@@ -19,7 +19,7 @@ public class ScreenMixin {
 	@Inject(at = @At("RETURN"), method = "init(II)V")
 	private void init(int width, int height, CallbackInfo info) {
 		Minecraft client = Minecraft.getInstance();
-		if ((Object) this instanceof AbstractContainerScreen hs && client.screen == hs) {
+		if ((Object) this instanceof AbstractContainerScreen hs && client.gui.screen() == hs) {
 			EmiScreenManager.addWidgets(hs);
 		}
 	}
@@ -27,7 +27,7 @@ public class ScreenMixin {
 	@Inject(at = @At("RETURN"), method = "resize(II)V")
 	private void resize(int width, int height, CallbackInfo info) {
 		Minecraft client = Minecraft.getInstance();
-		if ((Object) this instanceof AbstractContainerScreen hs && client.screen == hs) {
+		if ((Object) this instanceof AbstractContainerScreen hs && client.gui.screen() == hs) {
 			EmiScreenManager.addWidgets(hs);
 		}
 	}

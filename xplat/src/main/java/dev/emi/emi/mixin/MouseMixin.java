@@ -34,7 +34,7 @@ public class MouseMixin {
 			method = "onButton(JLnet/minecraft/client/input/MouseButtonInfo;I)V", cancellable = true)
 	private void onMouseDown(long window, MouseButtonInfo buttonInfo, int action, CallbackInfo info) {
 		try {
-			Screen screen = minecraft.screen;
+			Screen screen = minecraft.gui.screen();
 			if (screen instanceof AbstractContainerScreen<?> hs) {
 				double mx = this.xpos * minecraft.getWindow().getGuiScaledWidth() / minecraft.getWindow().getScreenWidth();
 				double my = this.ypos * minecraft.getWindow().getGuiScaledHeight() / minecraft.getWindow().getScreenHeight();
@@ -52,7 +52,7 @@ public class MouseMixin {
 			method = "onButton(JLnet/minecraft/client/input/MouseButtonInfo;I)V", cancellable = true)
 	private void onMouseUp(long window, MouseButtonInfo buttonInfo, int action, CallbackInfo info) {
 		try {
-			Screen screen = minecraft.screen;
+			Screen screen = minecraft.gui.screen();
 			if (screen instanceof AbstractContainerScreen<?> hs) {
 				double mx = this.xpos * minecraft.getWindow().getGuiScaledWidth() / minecraft.getWindow().getScreenWidth();
 				double my = this.ypos * minecraft.getWindow().getGuiScaledHeight() / minecraft.getWindow().getScreenHeight();
@@ -69,7 +69,7 @@ public class MouseMixin {
 			method = "handleAccumulatedMovement")
 	private void onMouseDragged(CallbackInfo info) {
 		try {
-			Screen screen = minecraft.screen;
+			Screen screen = minecraft.gui.screen();
 			if (screen instanceof AbstractContainerScreen<?> hs && activeButton != null) {
 				double mx = this.xpos * minecraft.getWindow().getGuiScaledWidth() / minecraft.getWindow().getScreenWidth();
 				double my = this.ypos * minecraft.getWindow().getGuiScaledHeight() / minecraft.getWindow().getScreenHeight();
@@ -88,7 +88,7 @@ public class MouseMixin {
 			method = "onScroll(JDD)V", cancellable = true)
 	private void onMouseScrolled(long window, double horizontal, double vertical, CallbackInfo info) {
 		try {
-			Screen screen = minecraft.screen;
+			Screen screen = minecraft.gui.screen();
 			if (screen instanceof AbstractContainerScreen<?> hs) {
 				double amount = (minecraft.options.discreteMouseScroll().get() ? Math.signum(vertical) : vertical) * minecraft.options.mouseWheelSensitivity().get();
 				double mx = xpos * minecraft.getWindow().getGuiScaledWidth() / minecraft.getWindow().getScreenWidth();

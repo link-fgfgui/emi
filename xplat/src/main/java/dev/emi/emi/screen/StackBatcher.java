@@ -85,7 +85,7 @@ public class StackBatcher {
 
 	public StackBatcher() {
 		Map<RenderType, ByteBufferBuilder> buffers = new HashMap<>();
-		assign(buffers, Sheets.cutoutBlockSheet());
+		assign(buffers, Sheets.cutoutBlockItemSheet());
 		assign(buffers, Sheets.translucentItemSheet());
 		assign(buffers, RenderTypes.glint());
 		assign(buffers, RenderTypes.entityGlint());

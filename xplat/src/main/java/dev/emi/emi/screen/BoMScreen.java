@@ -462,7 +462,7 @@ public class BoMScreen extends Screen {
 						EmiApi.displayRecipes(hover.stack);
 						RecipeScreen.resolve = hover.stack;
 						Minecraft client = Minecraft.getInstance();
-						client.screen.init(client.screen.width, client.screen.height);
+						client.gui.screen().init(client.gui.screen().width, client.gui.screen().height);
 						if (hover.node != null) {
 							if (hover.node.recipe != null) {
 								EmiApi.focusRecipe(hover.node.recipe);
@@ -543,7 +543,7 @@ public class BoMScreen extends Screen {
 
 	@Override
 	public void onClose() {
-		Minecraft.getInstance().setScreen(old);
+		Minecraft.getInstance().gui.setScreen(old);
 	}
 
 	private class Cost {

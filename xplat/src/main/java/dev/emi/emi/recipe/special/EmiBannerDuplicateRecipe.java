@@ -16,12 +16,7 @@ import dev.emi.emi.api.widget.SlotWidget;
 
 public class EmiBannerDuplicateRecipe extends EmiPatternCraftingRecipe {
 
-	public static final List<Item> BANNERS = List.of(
-			Items.WHITE_BANNER, Items.ORANGE_BANNER, Items.MAGENTA_BANNER, Items.LIGHT_BLUE_BANNER,
-			Items.YELLOW_BANNER, Items.LIME_BANNER, Items.PINK_BANNER, Items.GRAY_BANNER,
-			Items.LIGHT_GRAY_BANNER, Items.CYAN_BANNER, Items.PURPLE_BANNER, Items.BLUE_BANNER,
-			Items.BROWN_BANNER, Items.GREEN_BANNER, Items.RED_BANNER, Items.BLACK_BANNER
-	);
+	public static final List<Item> BANNERS = Items.BANNER.asList();
 
 	private final Item banner;
 

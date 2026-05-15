@@ -28,7 +28,7 @@ public class EmiHistory {
 
 	public static void pop() {
 		Minecraft client = Minecraft.getInstance();
-		if (client.screen instanceof AbstractContainerScreen) {
+		if (client.gui.screen() instanceof AbstractContainerScreen) {
 			clear();
 			return;
 		}
@@ -36,10 +36,10 @@ public class EmiHistory {
 		AbstractContainerScreen<?> screen = EmiApi.getHandledScreen();
 		if (i >= 0) {
 			Screen popped = HISTORIES.remove(i);
-			FORWARD_HISTORIES.add(client.screen);
-			client.setScreen(popped);
+			FORWARD_HISTORIES.add(client.gui.screen());
+			client.gui.setScreen(popped);
 		} else if (screen != null) {
-			client.setScreen(screen);
+			client.gui.setScreen(screen);
 		}
 	}
 
@@ -47,20 +47,20 @@ public class EmiHistory {
 		Minecraft client = Minecraft.getInstance();
 		while (!EmiHistory.isEmpty()) {
 			EmiHistory.pop();
-			if (predicate.test(client.screen)) {
+			if (predicate.test(client.gui.screen())) {
 				return;
 			}
 		}
-		client.setScreen(otherwise);
+		client.gui.setScreen(otherwise);
 	}
 
 	public static void forward() {
 		Minecraft client = Minecraft.getInstance();
 		int i = FORWARD_HISTORIES.size() - 1;
-		if (i >= 0 && client.screen != null) {
+		if (i >= 0 && client.gui.screen() != null) {
 			Screen popped = FORWARD_HISTORIES.remove(i);
-			HISTORIES.add(client.screen);
-			client.setScreen(popped);
+			HISTORIES.add(client.gui.screen());
+			client.gui.setScreen(popped);
 		}
 	}
 
