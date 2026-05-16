@@ -18,22 +18,22 @@ import dev.emi.emi.bom.BoM;
 import dev.emi.emi.data.EmiRecipeCategoryProperties;
 import dev.emi.emi.platform.EmiAgnos;
 import dev.emi.emi.registry.EmiRecipeFiller;
-import net.minecraft.block.Block;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.inventory.CraftingInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.util.Identifier;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.inventory.TransientCraftingContainer;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.resources.ResourceLocation;
 
 public class EmiUtil {
 	public static final Random RANDOM = new Random();
 
-	public static String subId(Identifier id) {
+	public static String subId(ResourceLocation id) {
 		return id.getNamespace() + "/" + id.getPath();
 	}
 
@@ -50,11 +50,11 @@ public class EmiUtil {
 	}
 
 	public static boolean showAdvancedTooltips() {
-		MinecraftClient client = MinecraftClient.getInstance();
+		Minecraft client = Minecraft.getInstance();
 		return client.options.advancedItemTooltips;
 	}
 
-	public static String translateId(String prefix, Identifier id) {
+	public static String translateId(String prefix, ResourceLocation id) {
 		return prefix + id.getNamespace() + "." + id.getPath().replace('/', '.');
 	}
 
@@ -68,16 +68,16 @@ public class EmiUtil {
 		return Arrays.asList(writer.getBuffer().toString().split("\n"));
 	}
 
-	public static CraftingInventory getCraftingInventory() {
+	public static TransientCraftingContainer getCraftingInventory() {
 		return new CraftingInventory(new ScreenHandler(null, -1) {
 
 			@Override
-			public boolean canUse(PlayerEntity player) {
+			public boolean canUse(Player player) {
 				return false;
 			}
 
 			@Override
-			public ItemStack quickMove(PlayerEntity player, int index) {
+			public ItemStack quickMove(Player player, int index) {
 				return ItemStack.EMPTY;
 			}
 
@@ -99,7 +99,7 @@ public class EmiUtil {
 
 	public static EmiRecipe getPreferredRecipe(EmiIngredient ingredient, EmiPlayerInventory inventory, boolean requireCraftable) {
 		if (ingredient.getEmiStacks().size() == 1 && !ingredient.isEmpty()) {
-			HandledScreen<?> hs = EmiApi.getHandledScreen();
+			AbstractContainerScreen<?> hs = EmiApi.getHandledScreen();
 			EmiStack stack = ingredient.getEmiStacks().get(0);
 			return getPreferredRecipe(EmiApi.getRecipeManager().getRecipesByOutput(stack).stream().filter(r -> {
 				@SuppressWarnings("rawtypes")
@@ -114,7 +114,7 @@ public class EmiUtil {
 	public static EmiRecipe getPreferredRecipe(List<EmiRecipe> recipes, EmiPlayerInventory inventory, boolean requireCraftable) {
 		EmiRecipe preferred = null;
 		int preferredWeight = -1;
-		HandledScreen<?> hs = EmiApi.getHandledScreen();
+		AbstractContainerScreen<?> hs = EmiApi.getHandledScreen();
 		EmiCraftContext context = new EmiCraftContext<>(hs, inventory, EmiCraftContext.Type.CRAFTABLE);
 		for (EmiRecipe recipe : recipes) {
 			if (!recipe.supportsRecipeTree()) {

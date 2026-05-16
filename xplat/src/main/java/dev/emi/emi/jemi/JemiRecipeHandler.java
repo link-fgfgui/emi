@@ -31,14 +31,14 @@ import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
 import mezz.jei.api.recipe.types.IRecipeType;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.recipe.RecipeEntry;
-import net.minecraft.recipe.RecipeManager;
-import net.minecraft.screen.ScreenHandler;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 
-public class JemiRecipeHandler<T extends ScreenHandler, R> implements EmiRecipeHandler<T> {
+public class JemiRecipeHandler<T extends AbstractContainerMenu, R> implements EmiRecipeHandler<T> {
     private final IRecipeType<R> type;
 	//private IRecipeCategory<R> category;
 	public IRecipeTransferHandler<T, R> handler;
@@ -61,7 +61,7 @@ public class JemiRecipeHandler<T extends ScreenHandler, R> implements EmiRecipeH
 	}
 
 	@Override
-	public EmiPlayerInventory getInventory(HandledScreen<T> screen) {
+	public EmiPlayerInventory getInventory(AbstractContainerScreen<T> screen) {
 		return new EmiPlayerInventory(List.of());
 	}
 
@@ -80,7 +80,7 @@ public class JemiRecipeHandler<T extends ScreenHandler, R> implements EmiRecipeH
 	public boolean craft(EmiRecipe recipe, EmiCraftContext<T> context) {
 		IRecipeTransferError err = jeiCraft(recipe, context, true, null);
 		if (err == null || err.getType().allowsTransfer) {
-			MinecraftClient.getInstance().setScreen(context.getScreen());
+			Minecraft.getInstance().setScreen(context.getScreen());
 		}
 		return err == null || err.getType().allowsTransfer;
 	}
@@ -123,7 +123,7 @@ public class JemiRecipeHandler<T extends ScreenHandler, R> implements EmiRecipeH
 	@SuppressWarnings("unchecked")
 	private IRecipeTransferError jeiCraft(EmiRecipe recipe, EmiCraftContext<T> context, boolean craft, JemiRecipeSlotsView view) {
 		try {
-			MinecraftClient client = MinecraftClient.getInstance();
+			Minecraft client = Minecraft.getInstance();
 			R rawRecipe = getRawRecipe(recipe);
 			
 			if (view == null) {
@@ -207,7 +207,7 @@ public class JemiRecipeHandler<T extends ScreenHandler, R> implements EmiRecipeH
 	@SuppressWarnings("unchecked")
 	private R getRawRecipe(EmiRecipe recipe) {
 		try {
-			MinecraftClient client = MinecraftClient.getInstance();
+			Minecraft client = Minecraft.getInstance();
 			RecipeManager manager = client.world.getRecipeManager();
 			if (type != null && type.getRecipeClass() != null) {
 				if (recipe instanceof JemiRecipe jr && jr.recipe != null) {
@@ -216,7 +216,7 @@ public class JemiRecipeHandler<T extends ScreenHandler, R> implements EmiRecipeH
 					}
 				}
 				if (manager != null) {
-					RecipeEntry<?> entry = EmiAgnos.getRecipe(manager, recipe.getId()); // TODO
+					RecipeHolder<?> entry = EmiAgnos.getRecipe(manager, recipe.getId()); // TODO
 					if (entry != null) {
 						if (type.getRecipeClass().isAssignableFrom(entry.getClass())) {
 							return type.getRecipeClass().cast(entry);
@@ -225,7 +225,7 @@ public class JemiRecipeHandler<T extends ScreenHandler, R> implements EmiRecipeH
 				}
 			}
 			if (manager != null) {
-                RecipeEntry<?> entry = EmiAgnos.getRecipe(manager, recipe.getId()); // TODO
+                RecipeHolder<?> entry = EmiAgnos.getRecipe(manager, recipe.getId()); // TODO
                 if (entry != null) {
 					return (R) entry;
 				}

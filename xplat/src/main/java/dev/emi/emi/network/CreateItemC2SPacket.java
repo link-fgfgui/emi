@@ -3,9 +3,9 @@ package dev.emi.emi.network;
 import dev.emi.emi.runtime.EmiLog;
 
 import net.minecraft.command.DefaultPermissions;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 
 public class CreateItemC2SPacket implements EmiPacket {
 	private final int mode;
@@ -16,18 +16,18 @@ public class CreateItemC2SPacket implements EmiPacket {
 		this.stack = stack;
 	}
 
-	public CreateItemC2SPacket(RegistryByteBuf buf) {
+	public CreateItemC2SPacket(RegistryFriendlyByteBuf buf) {
 		this(buf.readByte(), ItemStack.OPTIONAL_PACKET_CODEC.decode(buf));
 	}
 
 	@Override
-	public void write(RegistryByteBuf buf) {
+	public void write(RegistryFriendlyByteBuf buf) {
 		buf.writeByte(mode);
 		ItemStack.OPTIONAL_PACKET_CODEC.encode(buf, stack);
 	}
 
 	@Override
-	public void apply(PlayerEntity player) {
+	public void apply(Player player) {
 		if ((player.getPermissions().hasPermission(DefaultPermissions.GAMEMASTERS) || player.isCreative()) && player.currentScreenHandler != null) {
 			if (stack.isEmpty()) {
 				if (mode == 1 && !player.currentScreenHandler.getCursorStack().isEmpty()) {

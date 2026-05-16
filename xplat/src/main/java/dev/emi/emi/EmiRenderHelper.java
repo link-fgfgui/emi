@@ -1,3 +1,4 @@
+// TODO(Ravel): Failed to fully resolve file: null cannot be cast to non-null type com.intellij.psi.PsiClass
 package dev.emi.emi;
 
 import java.text.DecimalFormat;
@@ -17,44 +18,44 @@ import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.Widget;
 import dev.emi.emi.api.widget.WidgetHolder;
 import dev.emi.emi.config.EmiConfig;
-import dev.emi.emi.mixin.accessor.DrawContextAccessor;
-import dev.emi.emi.mixin.accessor.OrderedTextTooltipComponentAccessor;
+import dev.emi.emi.mixin.accessor.GuiGraphicsAccessor;
+import dev.emi.emi.mixin.accessor.ClientTextTooltipAccessor;
 import dev.emi.emi.registry.EmiRecipeFiller;
 import dev.emi.emi.runtime.EmiDrawContext;
 import dev.emi.emi.runtime.EmiLog;
 import dev.emi.emi.screen.EmiScreenManager;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner;
-import net.minecraft.client.gui.tooltip.OrderedTextTooltipComponent;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.client.gui.tooltip.TooltipPositioner;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.texture.Sprite;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTextTooltip;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 public class EmiRenderHelper {
 	public static final DecimalFormat TEXT_FORMAT = new DecimalFormat("#,###.##");
-	public static final Text EMPTY_TEXT = EmiPort.literal("");
-	public static final MinecraftClient CLIENT = MinecraftClient.getInstance();
-	public static final Identifier WIDGETS = EmiPort.id("emi", "textures/gui/widgets.png");
-	public static final Identifier BUTTONS = EmiPort.id("emi", "textures/gui/buttons.png");
-	public static final Identifier BACKGROUND = EmiPort.id("emi", "textures/gui/background.png");
-	public static final Identifier GRID = EmiPort.id("emi", "textures/gui/grid.png");
-	public static final Identifier DASH = EmiPort.id("emi", "textures/gui/dash.png");
-	public static final Identifier CONFIG = EmiPort.id("emi", "textures/gui/config.png");
-	public static final Identifier PIECES = EmiPort.id("emi", "textures/gui/pieces.png");
+	public static final MutableComponent EMPTY_TEXT = EmiPort.literal("");
+	public static final Minecraft CLIENT = Minecraft.getInstance();
+	public static final ResourceLocation WIDGETS = EmiPort.id("emi", "textures/gui/widgets.png");
+	public static final ResourceLocation BUTTONS = EmiPort.id("emi", "textures/gui/buttons.png");
+	public static final ResourceLocation BACKGROUND = EmiPort.id("emi", "textures/gui/background.png");
+	public static final ResourceLocation GRID = EmiPort.id("emi", "textures/gui/grid.png");
+	public static final ResourceLocation DASH = EmiPort.id("emi", "textures/gui/dash.png");
+	public static final ResourceLocation CONFIG = EmiPort.id("emi", "textures/gui/config.png");
+	public static final ResourceLocation PIECES = EmiPort.id("emi", "textures/gui/pieces.png");
 
-	public static void drawNinePatch(EmiDrawContext context, Identifier texture, int x, int y, int w, int h, int u, int v, int cornerLength, int centerLength) {
+	public static void drawNinePatch(EmiDrawContext context, ResourceLocation texture, int x, int y, int w, int h, int u, int v, int cornerLength, int centerLength) {
 		int cor = cornerLength;
 		int cen = centerLength;
 		int corcen = cor + cen;
@@ -82,7 +83,7 @@ public class EmiRenderHelper {
 		context.drawTexture(texture, x + coriw, y + corih, cor,        cor,         u + corcen, v + corcen, cor, cor, 256, 256);
 	}
 
-	public static void drawTintedSprite(EmiDrawContext context, Sprite sprite, int color, int x, int y, int xOff, int yOff, int width, int height) {
+	public static void drawTintedSprite(EmiDrawContext context, TextureAtlasSprite sprite, int color, int x, int y, int xOff, int yOff, int width, int height) {
 		if (sprite == null) {
 			return;
 		}
@@ -129,7 +130,7 @@ public class EmiRenderHelper {
 		context.fill(start, y, end - start, height, color);
 	}
 
-	public static Text getEmiText() {
+	public static MutableComponent getEmiText() {
 		return
 			EmiPort.append(
 				EmiPort.append(
@@ -138,8 +139,8 @@ public class EmiRenderHelper {
 				EmiPort.literal("I", Style.EMPTY.withColor(0x7bebfc)));
 	}
 
-	public static Text getPageText(int page, int total, int maxWidth) {
-		Text text = EmiPort.translatable("emi.page", page, total);
+	public static MutableComponent getPageText(int page, int total, int maxWidth) {
+		MutableComponent text = EmiPort.translatable("emi.page", page, total);
 		if (CLIENT.textRenderer.getWidth(text) > maxWidth) {
 			text = EmiPort.translatable("emi.page.short", page, total);
 			if (CLIENT.textRenderer.getWidth(text) > maxWidth) {
@@ -152,7 +153,7 @@ public class EmiRenderHelper {
 		return text;
 	}
 
-	public static void drawLeftTooltip(Screen screen, EmiDrawContext context, List<TooltipComponent> components, int x, int y) {
+	public static void drawLeftTooltip(Screen screen, EmiDrawContext context, List<ClientTextTooltip> components, int x, int y) {
 		drawTooltip(screen, context, components, x, y, screen.width / 2 - 16,
 			(screenWidth, screenHeight, mouseX, mouseY, tooltipWidth, tooltipHeight) -> {
 				Vector2i pos = new Vector2i(mouseX, mouseY).add(12, -12);
@@ -164,36 +165,36 @@ public class EmiRenderHelper {
 		});
 	}
 
-	public static void drawTooltip(Screen screen, EmiDrawContext context, List<TooltipComponent> components, int x, int y) {
+	public static void drawTooltip(Screen screen, EmiDrawContext context, List<ClientTextTooltip> components, int x, int y) {
 		drawTooltip(screen, context, components, x, y, screen.width / 2 - 16);
 	}
 
-	public static void drawTooltip(Screen screen, EmiDrawContext context, List<TooltipComponent> components, int x, int y, int maxWidth) {
-		drawTooltip(screen, context, components, x, y, maxWidth, HoveredTooltipPositioner.INSTANCE);
+	public static void drawTooltip(Screen screen, EmiDrawContext context, List<ClientTextTooltip> components, int x, int y, int maxWidth) {
+		drawTooltip(screen, context, components, x, y, maxWidth, DefaultTooltipPositioner.INSTANCE);
 	}
 
-	public static void drawTooltip(Screen screen, EmiDrawContext context, List<TooltipComponent> components, int x, int y, int maxWidth, TooltipPositioner positioner) {
+	public static void drawTooltip(Screen screen, EmiDrawContext context, List<ClientTextTooltip> components, int x, int y, int maxWidth, DefaultTooltipPositioner positioner) {
 		if (components.isEmpty()) {
 			return;
 		}
 		y = Math.max(16, y);
 		// Some mods assume this list will be mutable, oblige them
-		List<TooltipComponent> mutable = Lists.newArrayList();
+		List<ClientTextTooltip> mutable = Lists.newArrayList();
 		int wrapWidth = Math.max(components.stream()
-			.map(c -> c instanceof OrderedTextTooltipComponent ? 0 : c.getWidth(CLIENT.textRenderer))
+			.map(c -> c instanceof ClientTextTooltip ? 0 : c.getWidth(CLIENT.textRenderer))
 			.max(Integer::compare).orElse(0), maxWidth);
-		for (TooltipComponent comp : components) {
-			if (comp instanceof OrderedTextTooltipComponent ottc && ottc.getWidth(CLIENT.textRenderer) > wrapWidth) {
+		for (ClientTextTooltip comp : components) {
+			if (comp instanceof ClientTextTooltip ottc && ottc.getWidth(CLIENT.textRenderer) > wrapWidth) {
 				try {
-					OrderedText ordered = ((OrderedTextTooltipComponentAccessor) ottc).getText();
-					MutableText text = Text.empty();
+					FormattedCharSequence ordered = ((ClientTextTooltipAccessor) ottc).getText();
+					MutableComponent text = MutableComponent.empty();
 					// Mojang, what is this??? Please give me some other way to wrap
 					ordered.accept(((var1, style, codepoint) -> {
 						text.append(EmiPort.literal(String.valueOf(Character.toChars(codepoint)), style));
 						return true;
 					}));
-					for (OrderedText o : CLIENT.textRenderer.wrapLines(text, wrapWidth)) {
-						mutable.add(TooltipComponent.of(o));
+					for (FormattedCharSequence o : CLIENT.textRenderer.wrapLines(text, wrapWidth)) {
+						mutable.add(ClientTextTooltip.of(o));
 					}
 				} catch (Exception e) {
 					EmiLog.error("Error converting text", e);
@@ -218,11 +219,11 @@ public class EmiRenderHelper {
 //		context.pop();
 	}
 
-	public static Text getAmountText(EmiIngredient stack) {
+	public static MutableComponent getAmountText(EmiIngredient stack) {
 		return getAmountText(stack, stack.getAmount());
 	}
 
-	public static Text getAmountText(EmiIngredient stack, long amount) {
+	public static MutableComponent getAmountText(EmiIngredient stack, long amount) {
 		if (stack.isEmpty() || amount == 0) {
 			return EMPTY_TEXT;
 		}
@@ -232,7 +233,7 @@ public class EmiRenderHelper {
 		return EmiPort.literal(TEXT_FORMAT.format(amount));
 	}
 
-	public static Text getAmountText(EmiIngredient stack, double amount) {
+	public static MutableComponent getAmountText(EmiIngredient stack, double amount) {
 		if (stack.isEmpty() || amount == 0) {
 			return EMPTY_TEXT;
 		}
@@ -242,11 +243,11 @@ public class EmiRenderHelper {
 		return EmiPort.literal(TEXT_FORMAT.format(amount));
 	}
 
-	public static Text getFluidAmount(long amount) {
+	public static MutableComponent getFluidAmount(long amount) {
 		return EmiConfig.fluidUnit.translate(amount);
 	}
 
-	public static int getAmountOverflow(Text amount) {
+	public static int getAmountOverflow(MutableComponent amount) {
 		int width = CLIENT.textRenderer.getWidth(amount);
 		if (width > 14) {
 			return width - 14;
@@ -255,7 +256,7 @@ public class EmiRenderHelper {
 		}
 	}
 
-	public static void renderAmount(EmiDrawContext context, int x, int y, Text amount) {
+	public static void renderAmount(EmiDrawContext context, int x, int y, MutableComponent amount) {
 //		context.push();
 //		context.matrices().translate(0, 0, 200);
 		int tx = x + 17 - Math.min(14, CLIENT.textRenderer.getWidth(amount));
@@ -349,7 +350,7 @@ public class EmiRenderHelper {
 			context.matrices().translate(x + 4, y + 4/*, 0*/);
 
 			recipe.addWidgets(holder);
-			float delta = MinecraftClient.getInstance().getRenderTickCounter().getTickProgress(false);
+			float delta = Minecraft.getInstance().getRenderTickCounter().getTickProgress(false);
 			for (Widget widget : widgets) {
 				widget.render(context.raw(), -1000, -1000, delta);
 			}
@@ -358,7 +359,7 @@ public class EmiRenderHelper {
 			}
 
 			if (showMissing) {
-				HandledScreen hs = EmiApi.getHandledScreen();
+				AbstractContainerScreen hs = EmiApi.getHandledScreen();
 				EmiRecipeHandler handler = EmiRecipeFiller.getFirstValidHandler(recipe, hs);
 				if (handler != null) {
 					handler.render(recipe, new EmiCraftContext(hs, handler.getInventory(hs), EmiCraftContext.Type.FILL_BUTTON), widgets, context.raw());

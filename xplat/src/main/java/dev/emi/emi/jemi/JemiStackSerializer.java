@@ -11,7 +11,7 @@ import dev.emi.emi.api.stack.serializer.EmiIngredientSerializer;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.ingredients.IIngredientType;
 import mezz.jei.api.runtime.IIngredientManager;
-import net.minecraft.util.JsonHelper;
+import net.minecraft.util.GsonHelper;
 
 @SuppressWarnings("rawtypes")
 public class JemiStackSerializer implements EmiIngredientSerializer<JemiStack> {
@@ -42,11 +42,11 @@ public class JemiStackSerializer implements EmiIngredientSerializer<JemiStack> {
 	@Override
 	public EmiIngredient deserialize(JsonElement element) {
 		JsonObject json = element.getAsJsonObject();
-		String uid = JsonHelper.getString(json, "uid");
-		long amount = JsonHelper.getLong(json, "amount", 1);
-		float chance = JsonHelper.getFloat(json, "chance", 1);
+		String uid = GsonHelper.getString(json, "uid");
+		long amount = GsonHelper.getLong(json, "amount", 1);
+		float chance = GsonHelper.getFloat(json, "chance", 1);
 		EmiStack remainder = EmiStack.EMPTY;
-		if (JsonHelper.hasElement(json, "remainder")) {
+		if (GsonHelper.hasElement(json, "remainder")) {
 			EmiIngredient ing = EmiIngredientSerializer.getDeserialized(json.get("remainder"));
 			if (ing instanceof EmiStack stack) {
 				remainder = stack;

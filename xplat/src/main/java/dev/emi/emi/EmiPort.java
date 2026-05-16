@@ -7,13 +7,13 @@ import java.util.Random;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.BannerPatternsComponent;
-import net.minecraft.component.type.PotionContentsComponent;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.level.block.entity.BannerPatternLayers;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.recipe.display.SlotDisplay;
 import net.minecraft.recipe.display.SlotDisplayContexts;
-import net.minecraft.registry.RegistryKeys;
+import net.minecraft.core.registries.Registries;
 import org.jetbrains.annotations.Nullable;
 
 import dev.emi.emi.api.stack.Comparison;
@@ -21,34 +21,34 @@ import dev.emi.emi.platform.EmiAgnos;
 import dev.emi.emi.registry.EmiRecipes;
 import dev.emi.emi.runtime.EmiLog;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.TallFlowerBlock;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.ButtonWidget.PressAction;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.potion.Potion;
-import net.minecraft.recipe.Recipe;
-import net.minecraft.recipe.RecipeEntry;
-import net.minecraft.recipe.RecipeManager;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.resource.Resource;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.resource.featuretoggle.FeatureSet;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.DyeColor;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.TallFlowerBlock;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Button.OnPress;
+import net.minecraft.client.gui.components.EditBox;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.ChatFormatting;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 
 /**
  * Multiversion quarantine, to avoid excessive git pain
@@ -56,43 +56,43 @@ import net.minecraft.world.World;
 public final class EmiPort {
 	private static final net.minecraft.util.math.random.Random RANDOM = net.minecraft.util.math.random.Random.create();
 
-	public static MutableText literal(String s) {
-		return Text.literal(s);
+	public static MutableComponent literal(String s) {
+		return MutableComponent.literal(s);
 	}
 
-	public static MutableText literal(String s, Formatting formatting) {
-		return Text.literal(s).formatted(formatting);
+	public static MutableComponent literal(String s, ChatFormatting formatting) {
+		return MutableComponent.literal(s).formatted(formatting);
 	}
 
-	public static MutableText literal(String s, Formatting... formatting) {
-		return Text.literal(s).formatted(formatting);
+	public static MutableComponent literal(String s, ChatFormatting... formatting) {
+		return MutableComponent.literal(s).formatted(formatting);
 	}
 
-	public static MutableText literal(String s, Style style) {
-		return Text.literal(s).setStyle(style);
+	public static MutableComponent literal(String s, Style style) {
+		return MutableComponent.literal(s).setStyle(style);
 	}
 	
-	public static MutableText translatable(String s) {
-		return Text.translatable(s);
+	public static MutableComponent translatable(String s) {
+		return MutableComponent.translatable(s);
 	}
 	
-	public static MutableText translatable(String s, Formatting formatting) {
-		return Text.translatable(s).formatted(formatting);
+	public static MutableComponent translatable(String s, ChatFormatting formatting) {
+		return MutableComponent.translatable(s).formatted(formatting);
 	}
 	
-	public static MutableText translatable(String s, Object... objects) {
-		return Text.translatable(s, objects);
+	public static MutableComponent translatable(String s, Object... objects) {
+		return MutableComponent.translatable(s, objects);
 	}
 
-	public static MutableText append(MutableText text, Text appended) {
+	public static MutableComponent append(MutableComponent text, MutableComponent appended) {
 		return text.append(appended);
 	}
 
-	public static OrderedText ordered(Text text) {
+	public static FormattedCharSequence ordered(MutableComponent text) {
 		return text.asOrderedText();
 	}
 
-	public static Collection<Identifier> findResources(ResourceManager manager, String prefix, Predicate<String> pred) {
+	public static Collection<ResourceLocation> findResources(ResourceManager manager, String prefix, Predicate<String> pred) {
 		return manager.findResources(prefix, i -> pred.test(i.toString())).keySet();
 	}
 
@@ -104,9 +104,9 @@ public final class EmiPort {
 		}
 	}
 
-	public static BannerPatternsComponent addRandomBanner(BannerPatternsComponent patterns, Random random) {
-		var bannerRegistry = MinecraftClient.getInstance().world.getRegistryManager().getOrThrow(RegistryKeys.BANNER_PATTERN);
-		return new BannerPatternsComponent.Builder().addAll(patterns).add(bannerRegistry.getEntry(random.nextInt(bannerRegistry.size())).get(),
+	public static BannerPatternLayers addRandomBanner(BannerPatternLayers patterns, Random random) {
+		var bannerRegistry = Minecraft.getInstance().world.getRegistryManager().getOrThrow(Registries.BANNER_PATTERN);
+		return new BannerPatternLayers.Builder().addAll(patterns).add(bannerRegistry.getEntry(random.nextInt(bannerRegistry.size())).get(),
 			DyeColor.values()[random.nextInt(DyeColor.values().length)]).build();
 	}
 
@@ -131,7 +131,7 @@ public final class EmiPort {
 //		BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
 	}
 
-	public static int getGuiScale(MinecraftClient client) {
+	public static int getGuiScale(Minecraft client) {
 		return (int) client.getWindow().getScaleFactor();
 	}
 
@@ -144,28 +144,28 @@ public final class EmiPort {
 	}
 
 	public static Registry<Item> getItemRegistry() {
-		return Registries.ITEM;
+		return BuiltInRegistries.ITEM;
 	}
 
 	public static Registry<Block> getBlockRegistry() {
-		return Registries.BLOCK;
+		return BuiltInRegistries.BLOCK;
 	}
 
 	public static Registry<Fluid> getFluidRegistry() {
-		return Registries.FLUID;
+		return BuiltInRegistries.FLUID;
 	}
 
 	public static Registry<Potion> getPotionRegistry() {
-		return Registries.POTION;
+		return BuiltInRegistries.POTION;
 	}
 
 	public static Registry<Enchantment> getEnchantmentRegistry() {
-		MinecraftClient client = MinecraftClient.getInstance();
-		return client.world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT);
+		Minecraft client = Minecraft.getInstance();
+		return client.world.getRegistryManager().getOrThrow(Registries.ENCHANTMENT);
 	}
 
-	public static ButtonWidget newButton(int x, int y, int w, int h, Text name, PressAction action) {
-		return ButtonWidget.builder(name, action).position(x, y).size(w, h).build();
+	public static Button newButton(int x, int y, int w, int h, MutableComponent name, OnPress action) {
+		return Button.builder(name, action).position(x, y).size(w, h).build();
 	}
 
 	public static ItemStack getOutput(Recipe<?> recipe) {
@@ -179,7 +179,7 @@ public final class EmiPort {
         if (slotDisplay instanceof SlotDisplay.StackSlotDisplay(ItemStack stack)) {
             return stack;
         } else if (slotDisplay instanceof SlotDisplay.SmithingTrimSlotDisplay smithing) {
-            World world = MinecraftClient.getInstance().world;
+            Level world = Minecraft.getInstance().world;
             return smithing.getFirst(SlotDisplayContexts.createParameters(Objects.requireNonNull(world)));
         } else {
             EmiLog.warn("Recipe " + recipe + " has an unsupported result slot display: " + slotDisplay.getClass()
@@ -188,9 +188,9 @@ public final class EmiPort {
         }
 	}
 
-	public static void focus(TextFieldWidget widget, boolean focused) {
+	public static void focus(EditBox widget, boolean focused) {
 		// Also ensure a current focus-element in the screen is cleared if it changes
-		MinecraftClient client = MinecraftClient.getInstance();
+		Minecraft client = Minecraft.getInstance();
 		if (client != null && client.currentScreen != null) {
 			var currentFocus = client.currentScreen.getFocused();
 			if (!focused && currentFocus == widget || focused && currentFocus != widget) {
@@ -201,17 +201,17 @@ public final class EmiPort {
 	}
 
 	public static Stream<Item> getDisabledItems() {
-		MinecraftClient client = MinecraftClient.getInstance();
-		FeatureSet fs = client.world.getEnabledFeatures();
+		Minecraft client = Minecraft.getInstance();
+		FeatureFlagSet fs = client.world.getEnabledFeatures();
 		return getItemRegistry().stream().filter(i -> !i.isEnabled(fs));
 	}
 
-	public static Identifier getId(Recipe<?> recipe) {
+	public static ResourceLocation getId(Recipe<?> recipe) {
 		return EmiRecipes.recipeIds.get(recipe);
 	}
 
-	public static @Nullable RecipeEntry<?> getRecipe(Identifier id) {
-		MinecraftClient client = MinecraftClient.getInstance();
+	public static @Nullable RecipeHolder<?> getRecipe(ResourceLocation id) {
+		Minecraft client = Minecraft.getInstance();
 		if (client.world != null && id != null) {
 			RecipeManager manager = client.world.getRecipeManager();
 			if (manager != null) {
@@ -226,20 +226,20 @@ public final class EmiPort {
 	}
 
 	public static ItemStack setPotion(ItemStack stack, Potion potion) {
-		stack.apply(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT, getPotionRegistry().getEntry(potion), PotionContentsComponent::with);
+		stack.apply(DataComponents.POTION_CONTENTS, PotionContents.DEFAULT, getPotionRegistry().getEntry(potion), PotionContents::with);
 		return stack;
 	}
 
-	public static ComponentChanges emptyExtraData() {
-		return ComponentChanges.EMPTY;
+	public static DataComponentPatch emptyExtraData() {
+		return DataComponentPatch.EMPTY;
 	}
 
-	public static Identifier id(String id) {
-		return Identifier.of(id);
+	public static ResourceLocation id(String id) {
+		return ResourceLocation.of(id);
 	}
 
-	public static Identifier id(String namespace, String path) {
-		return Identifier.of(namespace, path);
+	public static ResourceLocation id(String namespace, String path) {
+		return ResourceLocation.of(namespace, path);
 	}
 
 	public static void applyModelViewMatrix() {

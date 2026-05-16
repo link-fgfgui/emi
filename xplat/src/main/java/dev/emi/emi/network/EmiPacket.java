@@ -1,12 +1,12 @@
 package dev.emi.emi.network;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-public interface EmiPacket extends CustomPayload {
-	void write(RegistryByteBuf buf);
+public interface EmiPacket extends CustomPacketPayload {
+	void write(RegistryFriendlyByteBuf buf);
 	
-	void apply(PlayerEntity player);
+	void apply(Player player);
 }

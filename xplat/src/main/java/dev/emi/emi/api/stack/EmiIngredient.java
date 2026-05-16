@@ -6,12 +6,12 @@ import java.util.List;
 import dev.emi.emi.api.render.EmiRenderable;
 import dev.emi.emi.registry.EmiTags;
 import dev.emi.emi.runtime.EmiTagKey;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.registry.tag.TagKey;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.tags.TagKey;
 
 public interface EmiIngredient extends EmiRenderable {
 	public static final int RENDER_ICON = 1;
@@ -45,13 +45,13 @@ public interface EmiIngredient extends EmiRenderable {
 	EmiIngredient setChance(float chance);
 
 	@Override
-	default void render(DrawContext draw, int x, int y, float delta) {
+	default void render(GuiGraphics draw, int x, int y, float delta) {
 		render(draw, x, y, delta, -1);
 	}
 
-	void render(DrawContext draw, int x, int y, float delta, int flags);
+	void render(GuiGraphics draw, int x, int y, float delta, int flags);
 
-	List<TooltipComponent> getTooltip();
+	List<ClientTooltipComponent> getTooltip();
 
 	public static boolean areEqual(EmiIngredient a, EmiIngredient b) {
 		List<EmiStack> as = a.getEmiStacks();

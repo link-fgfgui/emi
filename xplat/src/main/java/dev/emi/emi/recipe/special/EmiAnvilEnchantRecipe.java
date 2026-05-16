@@ -10,21 +10,21 @@ import dev.emi.emi.api.render.EmiTexture;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ItemEnchantmentsComponent;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.resources.ResourceLocation;
 
 public class EmiAnvilEnchantRecipe implements EmiRecipe {
 	private final Item tool;
 	private final Enchantment enchantment;
 	private final int level;
-	private final Identifier id;
+	private final ResourceLocation id;
 
-	public EmiAnvilEnchantRecipe(Item tool, Enchantment enchantment, int level, Identifier id) {
+	public EmiAnvilEnchantRecipe(Item tool, Enchantment enchantment, int level, ResourceLocation id) {
 		this.tool = tool;
 		this.enchantment = enchantment;
 		this.level = level;
@@ -37,7 +37,7 @@ public class EmiAnvilEnchantRecipe implements EmiRecipe {
 	}
 
 	@Override
-	public Identifier getId() {
+	public ResourceLocation getId() {
 		return id;
 	}
 
@@ -83,9 +83,9 @@ public class EmiAnvilEnchantRecipe implements EmiRecipe {
 
 	private EmiStack getBook() {
 		ItemStack item = new ItemStack(Items.ENCHANTED_BOOK);
-		var enchBuilder = new ItemEnchantmentsComponent.Builder(ItemEnchantmentsComponent.DEFAULT);
+		var enchBuilder = new ItemEnchantments.Builder(ItemEnchantments.DEFAULT);
 		enchBuilder.add(EmiPort.getEnchantmentRegistry().getEntry(enchantment), level);
-		item.set(DataComponentTypes.STORED_ENCHANTMENTS, enchBuilder.build());
+		item.set(DataComponents.STORED_ENCHANTMENTS, enchBuilder.build());
 		return EmiStack.of(item);
 	}
 }

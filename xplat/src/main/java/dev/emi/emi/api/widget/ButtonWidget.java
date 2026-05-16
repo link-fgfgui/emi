@@ -4,23 +4,23 @@ import java.util.function.BooleanSupplier;
 
 import dev.emi.emi.EmiRenderHelper;
 import dev.emi.emi.runtime.EmiDrawContext;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.resources.ResourceLocation;
 
 public class ButtonWidget extends Widget {
 	protected final int x, y, width, height, u, v;
 	protected final BooleanSupplier isActive;
 	protected final ClickAction action;
-	protected final Identifier texture;
+	protected final ResourceLocation texture;
 
 	public ButtonWidget(int x, int y, int width, int height, int u, int v, BooleanSupplier isActive, ClickAction action) {
 		this(x, y, width, height, u, v, EmiRenderHelper.BUTTONS, isActive, action);
 	}
 
-	public ButtonWidget(int x, int y, int width, int height, int u, int v, Identifier texture, BooleanSupplier isActive, ClickAction action) {
+	public ButtonWidget(int x, int y, int width, int height, int u, int v, ResourceLocation texture, BooleanSupplier isActive, ClickAction action) {
 		this.x = x;
 		this.y = y;
 		this.width = width;
@@ -54,7 +54,7 @@ public class ButtonWidget extends Widget {
 	@Override
 	public boolean mouseClicked(int mouseX, int mouseY, int button) {
 		action.click(mouseX, mouseY, button);
-		MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.ui(SoundEvents.UI_BUTTON_CLICK, 1.0f));
+		Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.ui(SoundEvents.UI_BUTTON_CLICK, 1.0f));
 		return true;
 	}
 

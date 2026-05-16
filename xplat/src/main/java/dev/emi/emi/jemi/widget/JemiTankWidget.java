@@ -9,8 +9,8 @@ import dev.emi.emi.api.widget.TankWidget;
 import dev.emi.emi.jemi.impl.JemiRecipeSlot;
 import dev.emi.emi.runtime.EmiDrawContext;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 
 public class JemiTankWidget extends TankWidget {
 	private final JemiRecipeSlot slot;
@@ -50,7 +50,7 @@ public class JemiTankWidget extends TankWidget {
 	}
 
 	@Override
-	public List<TooltipComponent> getTooltip(int mouseX, int mouseY) {
+	public List<ClientTooltipComponent> getTooltip(int mouseX, int mouseY) {
 		return jsw.getTooltip(mouseX, mouseY);
 	}
 }

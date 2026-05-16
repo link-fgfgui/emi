@@ -24,9 +24,9 @@ import dev.emi.emi.screen.tooltip.EmiTooltip;
 import dev.emi.emi.api.widget.Widget;
 import dev.emi.emi.api.widget.WidgetHolder;
 import dev.emi.emi.widget.RecipeBackground;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.resources.ResourceLocation;
 
 public class WidgetGroup implements WidgetHolder {
 	public final EmiRecipe recipe;
@@ -48,21 +48,21 @@ public class WidgetGroup implements WidgetHolder {
 		widgets.clear();
 		widgets.add(new RecipeBackground(-4, -4, width + 8, height + 8));
 		widgets.add(new TextWidget(EmiPort.ordered(EmiPort.translatable("emi.error.recipe.render")),
-			width / 2, height / 2 - 5, Formatting.RED.getColorValue(), true).horizontalAlign(Alignment.CENTER));
+			width / 2, height / 2 - 5, ChatFormatting.RED.getColorValue(), true).horizontalAlign(Alignment.CENTER));
 		widgets.add(new DrawableWidget(0, 0, width, height, (raw, mouseX, mouseY, delta) -> {})
 			.tooltip((i, j) -> EmiUtil.getStackTrace(e).stream()
-				.map(EmiPort::literal).map(EmiPort::ordered).map(TooltipComponent::of).toList()));
+				.map(EmiPort::literal).map(EmiPort::ordered).map(ClientTooltipComponent::of).toList()));
 	}
 
 	public void decorateDevMode() {
 		EmiRecipeCategory category = recipe.getCategory();
-		Identifier cid = category == null ? null : category.getId();
-		Identifier id = recipe.getId();
+		ResourceLocation cid = category == null ? null : category.getId();
+		ResourceLocation id = recipe.getId();
 		List<RecipeError> errors = Lists.newArrayList();
 		if (id == null) {
 			errors.add(new RecipeError(RecipeError.Severity.WARNING, EmiTooltip.splitTranslate("emi.dev.null_recipe_id")));
 		} else if (EmiDev.duplicateRecipeIds.contains(id)) {
-			List<TooltipComponent> tooltip = Lists.newArrayList();
+			List<ClientTooltipComponent> tooltip = Lists.newArrayList();
 			if (Objects.equals(id.getNamespace(), "minecraft") || Objects.equals(id.getNamespace(), "emi")) {
 				tooltip.addAll(EmiTooltip.splitTranslate("emi.dev.duplicate_vanilla_recipe_id", id));
 			} else {
@@ -80,7 +80,7 @@ public class WidgetGroup implements WidgetHolder {
 			}
 			errors.add(new RecipeError(RecipeError.Severity.ERROR, tooltip));
 		} else if (EmiDev.incorrectRecipeIds.contains(id)) {
-			List<TooltipComponent> tooltip = Lists.newArrayList();
+			List<ClientTooltipComponent> tooltip = Lists.newArrayList();
 			tooltip.addAll(EmiTooltip.splitTranslate("emi.dev.synthetic_nag_explanation", id));
 			tooltip.addAll(EmiTooltip.splitTranslate("emi.dev.synthetic_id"));
 			errors.add(new RecipeError(RecipeError.Severity.ERROR, tooltip));
@@ -125,15 +125,15 @@ public class WidgetGroup implements WidgetHolder {
 		}
 
 		if (!errors.isEmpty()) {
-			List<TooltipComponent> tooltip = Lists.newArrayList();
+			List<ClientTooltipComponent> tooltip = Lists.newArrayList();
 			RecipeError.Severity severity = RecipeError.Severity.WARNING;
 			for (RecipeError error : errors) {
 				if (error.severity() == RecipeError.Severity.ERROR) {
 					severity = RecipeError.Severity.ERROR;
 				}
 				tooltip.add(switch (error.severity()) {
-					case ERROR -> EmiTooltipComponents.of(EmiPort.translatable("emi.dev.severity.error", Formatting.RED));
-					case WARNING -> EmiTooltipComponents.of(EmiPort.translatable("emi.dev.severity.warning", Formatting.YELLOW));
+					case ERROR -> EmiTooltipComponents.of(EmiPort.translatable("emi.dev.severity.error", ChatFormatting.RED));
+					case WARNING -> EmiTooltipComponents.of(EmiPort.translatable("emi.dev.severity.warning", ChatFormatting.YELLOW));
 				});
 				tooltip.addAll(error.tooltip());
 			}
@@ -146,7 +146,7 @@ public class WidgetGroup implements WidgetHolder {
 				draw.fill(-2, -3, width, 2, errorColor);
 				draw.fill(-2, height + 1, width + 4, 2, errorColor);
 			});
-			addText(EmiPort.literal("!", Formatting.BOLD), width, -2, 0xFF000000 | errorColor, true);
+			addText(EmiPort.literal("!", ChatFormatting.BOLD), width, -2, 0xFF000000 | errorColor, true);
 			addTooltip(tooltip, width - 2, -4, 8, 16);
 		}
 	}

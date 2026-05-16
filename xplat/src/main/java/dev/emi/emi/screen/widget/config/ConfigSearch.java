@@ -1,18 +1,18 @@
 package dev.emi.emi.screen.widget.config;
 
 import dev.emi.emi.EmiPort;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.Click;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.resource.language.I18n;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.network.chat.Component;
 
 public class ConfigSearch {
 	public final ConfigSearchWidgetField field;
 
 	public ConfigSearch(int x, int y, int width, int height) {
-		MinecraftClient client = MinecraftClient.getInstance();
+		Minecraft client = Minecraft.getInstance();
 
 		field = new ConfigSearchWidgetField(client.textRenderer, x, y, width, height, EmiPort.literal(""));
 		field.setChangedListener(s -> {
@@ -33,9 +33,9 @@ public class ConfigSearch {
 		return field.getText();
 	}
 	
-	private class ConfigSearchWidgetField extends TextFieldWidget {
+	private class ConfigSearchWidgetField extends EditBox {
 
-		public ConfigSearchWidgetField(TextRenderer textRenderer, int x, int y, int width, int height, Text text) {
+		public ConfigSearchWidgetField(Font textRenderer, int x, int y, int width, int height, Component text) {
 			super(textRenderer, x, y, width, height, text);
 		}
 

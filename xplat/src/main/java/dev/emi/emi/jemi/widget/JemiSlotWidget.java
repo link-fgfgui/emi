@@ -22,9 +22,9 @@ import dev.emi.emi.runtime.EmiLog;
 import mezz.jei.api.ingredients.IIngredientRenderer;
 import mezz.jei.api.ingredients.ITypedIngredient;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.network.chat.Component;
 
 public class JemiSlotWidget extends SlotWidget {
 	public final JemiRecipeSlot slot;
@@ -107,7 +107,7 @@ public class JemiSlotWidget extends SlotWidget {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static void addTooltip(List<TooltipComponent> list, JemiRecipeSlot slot, EmiIngredient stack, IIngredientRenderer<?> renderer) {
+	public static void addTooltip(List<ClientTooltipComponent> list, JemiRecipeSlot slot, EmiIngredient stack, IIngredientRenderer<?> renderer) {
 		if (renderer != null) {
 			if (stack.getEmiStacks().size() == 1 && stack.getEmiStacks().get(0) instanceof JemiStack js) {
 				js = js.copy();
@@ -142,8 +142,8 @@ public class JemiSlotWidget extends SlotWidget {
 	}
 
 	@Override
-	public List<TooltipComponent> getTooltip(int mouseX, int mouseY) {
-		List<TooltipComponent> list = Lists.newArrayList();
+	public List<ClientTooltipComponent> getTooltip(int mouseX, int mouseY) {
+		List<ClientTooltipComponent> list = Lists.newArrayList();
 		if (getStack().isEmpty()) {
 			return List.of();
 		}

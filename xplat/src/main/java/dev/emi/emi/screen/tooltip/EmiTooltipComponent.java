@@ -2,14 +2,14 @@ package dev.emi.emi.screen.tooltip;
 
 import dev.emi.emi.EmiPort;
 import dev.emi.emi.runtime.EmiDrawContext;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.client.render.item.ItemRenderer;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.network.chat.Component;
 
-public interface EmiTooltipComponent extends TooltipComponent {
+public interface EmiTooltipComponent extends ClientTooltipComponent {
 
 	default void drawTooltip(EmiDrawContext context, TooltipRenderData tooltip) {
 	}
@@ -18,17 +18,17 @@ public interface EmiTooltipComponent extends TooltipComponent {
 	}
 
     @Override
-    default void drawItems(TextRenderer textRenderer, int x, int y, int width, int height, DrawContext raw) {
+    default void drawItems(Font textRenderer, int x, int y, int width, int height, DrawContext raw) {
         EmiDrawContext context = EmiDrawContext.wrap(raw);
         context.push();
         context.matrices().translate(x, y/*, 0*/);
-        MinecraftClient client = MinecraftClient.getInstance();
+        Minecraft client = Minecraft.getInstance();
         drawTooltip(context, new TooltipRenderData(textRenderer, client.getItemRenderer(), x, y));
         context.pop();
     }
 
     @Override
-    default void drawText(DrawContext raw, TextRenderer textRenderer, int x, int y) {
+    default void drawText(DrawContext raw, Font textRenderer, int x, int y) {
         EmiDrawContext context = EmiDrawContext.wrap(raw);
         context.push();
         context.matrices().translate(x, y/*, 0*/);
@@ -38,10 +38,10 @@ public interface EmiTooltipComponent extends TooltipComponent {
 
 	public static class TextRenderData {
         private final EmiDrawContext context;
-		public final TextRenderer renderer;
+		public final Font renderer;
 		public final int x, y;
 		
-		public TextRenderData(EmiDrawContext context, TextRenderer renderer, int x, int y) {
+		public TextRenderData(EmiDrawContext context, Font renderer, int x, int y) {
             this.context = context;
             this.renderer = renderer;
 			this.x = x;
@@ -52,7 +52,7 @@ public interface EmiTooltipComponent extends TooltipComponent {
 			draw(EmiPort.literal(text), x, y, color, shadow);
 		}
 
-		public void draw(Text text, int x, int y, int color, boolean shadow) {
+		public void draw(Component text, int x, int y, int color, boolean shadow) {
             if (shadow) {
                 context.drawTextWithShadow(text, x, y, color);
             } else {
@@ -62,11 +62,11 @@ public interface EmiTooltipComponent extends TooltipComponent {
 	}
 
 	public static class TooltipRenderData {
-		public final TextRenderer text;
+		public final Font text;
 		public final ItemRenderer item;
 		public final int x, y;
 
-		public TooltipRenderData(TextRenderer text, ItemRenderer item, int x, int y) {
+		public TooltipRenderData(Font text, ItemRenderer item, int x, int y) {
 			this.text = text;
 			this.item = item;
 			this.x = x;

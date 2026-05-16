@@ -9,7 +9,7 @@ import dev.emi.emi.api.render.EmiTexture;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public class EmiResolutionRecipe implements EmiRecipe {
 	public final EmiIngredient ingredient;
@@ -26,7 +26,7 @@ public class EmiResolutionRecipe implements EmiRecipe {
 	}
 
 	@Override
-	public @Nullable Identifier getId() {
+	public @Nullable ResourceLocation getId() {
 		return null;
 	}
 

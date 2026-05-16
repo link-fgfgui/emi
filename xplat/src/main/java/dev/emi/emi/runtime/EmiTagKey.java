@@ -14,16 +14,16 @@ import com.google.common.collect.Maps;
 import dev.emi.emi.EmiPort;
 import dev.emi.emi.EmiUtil;
 import dev.emi.emi.registry.EmiTags;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.resource.language.I18n;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.entry.RegistryEntryList.Named;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet.Named;
+import net.minecraft.tags.TagKey;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 // Wrapper around TagKeys
 public class EmiTagKey<T> {
@@ -48,12 +48,12 @@ public class EmiTagKey<T> {
 		return raw.isOf(registry.getKey());
 	}
 
-	public Identifier id() {
+	public ResourceLocation id() {
 		return raw.id();
 	}
 
 	public Registry<T> registry() {
-		MinecraftClient client = MinecraftClient.getInstance();
+		Minecraft client = Minecraft.getInstance();
 		return client.world.getRegistryManager().getOptional(raw.registryRef()).orElse(null);
 	}
 
@@ -67,9 +67,9 @@ public class EmiTagKey<T> {
 				return opt.get().stream().filter(o -> {
 					Fluid f = (Fluid) o.value();
 					return f.isStill(f.getDefaultState());
-				}).map(RegistryEntry::value);
+				}).map(Holder::value);
 			}
-			return opt.get().stream().map(RegistryEntry::value);
+			return opt.get().stream().map(Holder::value);
 		}
 	}
 
@@ -81,7 +81,7 @@ public class EmiTagKey<T> {
 		return stream().collect(Collectors.toSet());
 	}
 
-	public Text getTagName() {
+	public Component getTagName() {
 		String s = getTagTranslationKey();
 		if (s == null) {
 			return EmiPort.literal("#" + this.id());
@@ -95,7 +95,7 @@ public class EmiTagKey<T> {
 	}
 
 	private @Nullable String getTagTranslationKey() {
-		Identifier registry = raw.registryRef().getValue();
+		ResourceLocation registry = raw.registryRef().getValue();
 		if (registry.getNamespace().equals("minecraft")) {
 			String s = translatePrefix("tag." + registry.getPath().replace("/", ".") + ".", this.id());
 			if (s != null) {
@@ -110,7 +110,7 @@ public class EmiTagKey<T> {
 		return translatePrefix("tag.", this.id());
 	}
 
-	private static @Nullable String translatePrefix(String prefix, Identifier id) {
+	private static @Nullable String translatePrefix(String prefix, ResourceLocation id) {
 		String s = EmiUtil.translateId(prefix, id);
 		if (I18n.hasTranslation(s)) {
 			return s;
@@ -124,8 +124,8 @@ public class EmiTagKey<T> {
 		return null;
 	}
 
-	public @Nullable Identifier getCustomModel() {
-		Identifier rid = this.id();
+	public @Nullable ResourceLocation getCustomModel() {
+		ResourceLocation rid = this.id();
 		if (rid.getNamespace().equals("forge") && !EmiTags.MODELED_TAGS.containsKey(raw())) {
 			return EmiTagKey.of(registry(), EmiPort.id("c", rid.getPath())).getCustomModel();
 		}
@@ -151,7 +151,7 @@ public class EmiTagKey<T> {
 		return (EmiTagKey<T>) CACHE.computeIfAbsent(raw, k -> new EmiTagKey<>(k));
 	}
 
-	public static <T> EmiTagKey<T> of(Registry<T> registry, Identifier id) {
+	public static <T> EmiTagKey<T> of(Registry<T> registry, ResourceLocation id) {
 		return of(TagKey.of(registry.getKey(), id));
 	}
 

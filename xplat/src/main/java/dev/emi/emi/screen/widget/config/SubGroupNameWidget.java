@@ -2,13 +2,13 @@ package dev.emi.emi.screen.widget.config;
 
 import dev.emi.emi.EmiPort;
 import dev.emi.emi.runtime.EmiDrawContext;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 
 public class SubGroupNameWidget extends GroupNameWidget {
 	public GroupNameWidget parent;
 
-	public SubGroupNameWidget(String id, Text text) {
+	public SubGroupNameWidget(String id, Component text) {
 		super(id, text);
 	}
 

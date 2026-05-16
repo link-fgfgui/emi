@@ -5,7 +5,7 @@ import java.util.Set;
 import com.google.common.collect.Sets;
 
 import dev.emi.emi.api.stack.EmiStack;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 public class NameQuery extends Query {
 	private final Set<EmiStack> valid = Sets.newIdentityHashSet();
@@ -26,7 +26,7 @@ public class NameQuery extends Query {
 		return getText(stack).getString().toLowerCase().contains(name);
 	}
 
-	public static Text getText(EmiStack stack) {
+	public static Component getText(EmiStack stack) {
 		return stack.getName();
 	}
 }

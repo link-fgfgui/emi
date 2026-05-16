@@ -12,8 +12,8 @@ import dev.emi.emi.api.recipe.EmiResolutionRecipe;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.stack.TagEmiIngredient;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
+import net.minecraft.tags.TagKey;
+import net.minecraft.resources.ResourceLocation;
 
 public class EmiTagRecipe extends EmiIngredientRecipe {
 	private final List<EmiStack> stacks;
@@ -47,7 +47,7 @@ public class EmiTagRecipe extends EmiIngredientRecipe {
 	}
 
 	@Override
-	public Identifier getId() {
+	public ResourceLocation getId() {
 		return EmiPort.id("emi", "/tag/" + key.registryRef().getValue().getPath() + "/" + EmiUtil.subId(key.id()));
 	}
 }

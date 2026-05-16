@@ -31,13 +31,13 @@ import dev.emi.emi.runtime.EmiSidebars;
 import dev.emi.emi.screen.BoMScreen;
 import dev.emi.emi.screen.EmiScreenManager;
 import dev.emi.emi.screen.RecipeScreen;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.gui.screen.ingame.InventoryScreen;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 
 public class EmiApi {
-	private static final MinecraftClient client = MinecraftClient.getInstance();
+	private static final Minecraft client = Minecraft.getInstance();
 
 	public static List<EmiStack> getIndexStacks() {
 		return EmiStackList.stacks;
@@ -103,9 +103,9 @@ public class EmiApi {
 		return null;
 	}
 
-	public static HandledScreen<?> getHandledScreen() {
+	public static AbstractContainerScreen<?> getHandledScreen() {
 		Screen s = client.currentScreen;
-		if (s instanceof HandledScreen<?> hs) {
+		if (s instanceof AbstractContainerScreen<?> hs) {
 			return hs;
 		} else if (s instanceof RecipeScreen rs) {
 			return rs.old;
@@ -164,7 +164,7 @@ public class EmiApi {
 			client.setScreen(new InventoryScreen(client.player));
 		}
 		Screen s = client.currentScreen;
-		if (s instanceof HandledScreen<?> hs) {
+		if (s instanceof AbstractContainerScreen<?> hs) {
 			push();
 			client.setScreen(new BoMScreen(hs));
 		} else if (s instanceof RecipeScreen rs) {
@@ -246,7 +246,7 @@ public class EmiApi {
 			if (getHandledScreen() == null) {
 				client.setScreen(new InventoryScreen(client.player));
 			}
-			if (client.currentScreen instanceof HandledScreen<?> hs) {
+			if (client.currentScreen instanceof AbstractContainerScreen<?> hs) {
 				push();
 				client.setScreen(new RecipeScreen(hs, recipes));
 			} else if (client.currentScreen instanceof BoMScreen bs) {

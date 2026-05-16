@@ -8,8 +8,8 @@ import dev.emi.emi.EmiPort;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
-import net.minecraft.recipe.RecipeEntry;
-import net.minecraft.util.Identifier;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.resources.ResourceLocation;
 
 public interface EmiRecipe {
 
@@ -28,7 +28,7 @@ public interface EmiRecipe {
 	 * Commonly, synthetic IDs will be formatted "mymod:/my_process/unique_name".
 	 * @return The unique ID of the recipe, or null. If null, the recipe cannot be serialized.
 	 */
-	@Nullable Identifier getId();
+	@Nullable ResourceLocation getId();
 	
 	/**
 	 * @return A list of ingredients required for the recipe.
@@ -99,7 +99,7 @@ public interface EmiRecipe {
 	 * @return The vanilla {@link RecipeEntry} this recipe represents, if any.
 	 *  By default, uses the result of {@link EmiRecipe#getId()} to look up in the RecipeManager.
 	 */
-	default @Nullable RecipeEntry<?> getBackingRecipe() {
+	default @Nullable RecipeHolder<?> getBackingRecipe() {
 		return EmiPort.getRecipe(getId());
 	}
 }

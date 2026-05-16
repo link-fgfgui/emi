@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import dev.emi.emi.runtime.EmiLog;
 import dev.emi.emi.runtime.EmiReloadManager;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 
 /**
  * This entire mixin assumes that no one will modify how recipes and tags are synced.
@@ -15,8 +15,8 @@ import net.minecraft.client.network.ClientPlayNetworkHandler;
  * This waits for both, then reloads.
  * If only one comes, no reload will occur, which would be weird behavior.
  */
-@Mixin(ClientPlayNetworkHandler.class)
-public class ClientPlayNetworkHandlerMixin {
+@Mixin(ClientPacketListener.class)
+public class ClientPacketListenerMixin {
 
 	@Inject(at = @At("RETURN"), method = "onSynchronizeTags")
 	private void refreshTagBasedData(CallbackInfo info) {

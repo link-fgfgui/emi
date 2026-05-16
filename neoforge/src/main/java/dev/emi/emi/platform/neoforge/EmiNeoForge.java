@@ -1,7 +1,7 @@
 package dev.emi.emi.platform.neoforge;
 
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.RecipesReceivedEvent;
@@ -40,7 +40,7 @@ public class EmiNeoForge {
 	}
 
     public void playerConnect(PlayerEvent.PlayerLoggedInEvent event) {
-        if (event.getEntity() instanceof ServerPlayerEntity spe) {
+        if (event.getEntity() instanceof ServerPlayer spe) {
             EmiNetwork.sendToClient(spe, new PingS2CPacket());
         }
     }

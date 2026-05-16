@@ -25,8 +25,8 @@ import dev.emi.emi.bom.FlatMaterialCost;
 import dev.emi.emi.bom.MaterialNode;
 import it.unimi.dsi.fastutil.objects.Object2LongLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.GsonHelper;
 
 public class EmiFavorites {
 	public static List<EmiFavorite> favorites = Lists.newArrayList();
@@ -55,10 +55,10 @@ public class EmiFavorites {
 			if (el.isJsonObject()) {
 				JsonObject json = el.getAsJsonObject();
 				EmiRecipe recipe = null;
-				if (JsonHelper.hasString(json, "recipe")) {
-					recipe = EmiApi.getRecipeManager().getRecipe(EmiPort.id(JsonHelper.getString(json, "recipe")));
+				if (GsonHelper.hasString(json, "recipe")) {
+					recipe = EmiApi.getRecipeManager().getRecipe(EmiPort.id(GsonHelper.getString(json, "recipe")));
 				}
-				if (JsonHelper.hasElement(json, "stack")) {
+				if (GsonHelper.hasElement(json, "stack")) {
 					EmiIngredient ingredient = EmiIngredientSerializer.getDeserialized(json.get("stack"));
 					if (ingredient.isEmpty()) {
 						continue;

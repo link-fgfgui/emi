@@ -8,40 +8,40 @@ import java.util.function.Predicate;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.Click;
 import net.minecraft.client.input.KeyInput;
-import net.minecraft.client.render.RenderLayers;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.VertexFormat;
 
 import dev.emi.emi.EmiPort;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.AbstractParentElement;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Drawable;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.Selectable;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.screen.narration.NarrationPart;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormats;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.events.AbstractContainerEventHandler;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.narration.NarratedElementType;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.components.EditBox;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 
 /**
  * Shamelessly modified vanilla lists to support variable width.
  * This is the lesser of two evils, at least this way I have vanilla compat.
  */
-public class ListWidget extends AbstractParentElement implements Drawable, Selectable {
-	private static final Identifier MENU_LIST_BACKGROUND_TEXTURE = EmiPort.id("minecraft", "textures/gui/menu_list_background.png");
-	private static final Identifier INWORLD_MENU_LIST_BACKGROUND_TEXTURE = EmiPort.id("minecraft", "textures/gui/inworld_menu_list_background.png");
+public class ListWidget extends AbstractContainerEventHandler implements Renderable, NarratableEntry {
+	private static final ResourceLocation MENU_LIST_BACKGROUND_TEXTURE = EmiPort.id("minecraft", "textures/gui/menu_list_background.png");
+	private static final ResourceLocation INWORLD_MENU_LIST_BACKGROUND_TEXTURE = EmiPort.id("minecraft", "textures/gui/inworld_menu_list_background.png");
 
-	protected final MinecraftClient client;
+	protected final Minecraft client;
 	private final List<Entry> children = Lists.newArrayList();
 	protected int width;
 	protected int height;
@@ -56,7 +56,7 @@ public class ListWidget extends AbstractParentElement implements Drawable, Selec
 	private Entry hoveredEntry;
 	public int padding = 4;
 
-	public ListWidget(MinecraftClient client, int width, int height, int top, int bottom) {
+	public ListWidget(Minecraft client, int width, int height, int top, int bottom) {
 		this.client = client;
 		this.width = width;
 		this.height = height;
@@ -124,7 +124,7 @@ public class ListWidget extends AbstractParentElement implements Drawable, Selec
 		int mid = this.left + this.width / 2;
 		int rowLeft = mid - rowWidth;
 		int rowRight = mid + rowWidth;
-		int m = MathHelper.floor(y - (double)this.top) + (int)this.getScrollAmount() - 4;
+		int m = Mth.floor(y - (double)this.top) + (int)this.getScrollAmount() - 4;
 		if (x < this.getScrollbarPositionX() && x >= rowLeft && x <= rowRight && m >= 0) {
 			int h = 0;
 			for (int i = 0; i < this.getEntryCount(); i++) {
@@ -157,20 +157,20 @@ public class ListWidget extends AbstractParentElement implements Drawable, Selec
 	}
 
 	@Override
-	public void render(DrawContext draw, int mouseX, int mouseY, float delta) {
+	public void render(GuiGraphics draw, int mouseX, int mouseY, float delta) {
 		int o;
 		int n;
 		int m;
 		int i = this.getScrollbarPositionX();
 		int j = i + 6;
-		Tessellator tessellator = Tessellator.getInstance();
-		BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+		Tesselator tessellator = Tesselator.getInstance();
+		BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, DefaultVertexFormat.POSITION_TEXTURE_COLOR);
 //		RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
 		this.hoveredEntry = this.isMouseOver(mouseX, mouseY) ? this.getEntryAtPosition(mouseX, mouseY) : null;
 
 		{	// Render background
 //			RenderSystem.enableBlend();
-			Identifier identifier = this.client.world == null ? MENU_LIST_BACKGROUND_TEXTURE : INWORLD_MENU_LIST_BACKGROUND_TEXTURE;
+			ResourceLocation identifier = this.client.world == null ? MENU_LIST_BACKGROUND_TEXTURE : INWORLD_MENU_LIST_BACKGROUND_TEXTURE;
 			draw.drawTexture(RenderPipelines.GUI_TEXTURED, identifier, left, top, right, bottom + (int)scrollAmount, right - left, bottom - top, 32, 32);
 //			RenderSystem.disableBlend();
 		}
@@ -184,8 +184,8 @@ public class ListWidget extends AbstractParentElement implements Drawable, Selec
 
 		{	// Render header & footer separators
 //			RenderSystem.enableBlend();
-			Identifier identifier = this.client.world == null ? Screen.HEADER_SEPARATOR_TEXTURE : Screen.INWORLD_HEADER_SEPARATOR_TEXTURE;
-			Identifier identifier2 = this.client.world == null ? Screen.FOOTER_SEPARATOR_TEXTURE : Screen.INWORLD_FOOTER_SEPARATOR_TEXTURE;
+			ResourceLocation identifier = this.client.world == null ? Screen.HEADER_SEPARATOR_TEXTURE : Screen.INWORLD_HEADER_SEPARATOR_TEXTURE;
+			ResourceLocation identifier2 = this.client.world == null ? Screen.FOOTER_SEPARATOR_TEXTURE : Screen.INWORLD_FOOTER_SEPARATOR_TEXTURE;
 			draw.drawTexture(RenderPipelines.GUI_TEXTURED, identifier, left, top - 2, 0.0F, 0.0F, width, 2, 32, 2);
 			draw.drawTexture(RenderPipelines.GUI_TEXTURED, identifier2, left, bottom, 0.0F, 0.0F, width, 2, 32, 2);
 //			RenderSystem.disableBlend();
@@ -194,12 +194,12 @@ public class ListWidget extends AbstractParentElement implements Drawable, Selec
 		if ((o = this.getMaxScroll()) > 0) {
 //			RenderSystem.setShader(GameRenderer::getPositionColorProgram);
 			m = (int)((float)((this.bottom - this.top) * (this.bottom - this.top)) / (float)this.getMaxPosition());
-			m = MathHelper.clamp(m, 32, this.bottom - this.top - 8);
+			m = Mth.clamp(m, 32, this.bottom - this.top - 8);
 			n = (int)this.getScrollAmount() * (this.bottom - this.top - m) / o + this.top;
 			if (n < this.top) {
 				n = this.top;
 			}
-			bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+			bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 			bufferBuilder.vertex(i, this.bottom, 0).color(0, 0, 0, 255);
 			bufferBuilder.vertex(j, this.bottom, 0).color(0, 0, 0, 255);
 			bufferBuilder.vertex(j, this.top, 0).color(0, 0, 0, 255);
@@ -212,7 +212,7 @@ public class ListWidget extends AbstractParentElement implements Drawable, Selec
 			bufferBuilder.vertex(j - 1, n + m - 1, 0).color(192, 192, 192, 255);
 			bufferBuilder.vertex(j - 1, n, 0).color(192, 192, 192, 255);
 			bufferBuilder.vertex(i, n, 0).color(192, 192, 192, 255);
-            RenderLayers.debugQuads().draw(bufferBuilder.end());
+            ItemBlockRenderTypes.debugQuads().draw(bufferBuilder.end());
 		}
 //        RenderSystem.
 //		RenderSystem.disableBlend();
@@ -250,7 +250,7 @@ public class ListWidget extends AbstractParentElement implements Drawable, Selec
 	}
 
 	public void setScrollAmount(double amount) {
-		this.scrollAmount = MathHelper.clamp(amount, 0.0, (double)this.getMaxScroll());
+		this.scrollAmount = Mth.clamp(amount, 0.0, (double)this.getMaxScroll());
 	}
 
 	public int getMaxScroll() {
@@ -267,18 +267,18 @@ public class ListWidget extends AbstractParentElement implements Drawable, Selec
 
 	public void unfocusTextField() {
 		for (Entry e : this.children) {
-			for (Element el : e.children()) {
-				if (el instanceof TextFieldWidget tfw) {
+			for (AbstractContainerEventHandler el : e.children()) {
+				if (el instanceof EditBox tfw) {
 					EmiPort.focus(tfw, false);
 				}
 			}
 		}
 	}
 
-	public TextFieldWidget getFocusedTextField() {
+	public EditBox getFocusedTextField() {
 		for (Entry e : this.children) {
-			for (Element el : e.children()) {
-				if (el instanceof TextFieldWidget tfw) {
+			for (AbstractContainerEventHandler el : e.children()) {
+				if (el instanceof EditBox tfw) {
 					if (tfw.isFocused()) {
 						return tfw;
 					}
@@ -341,7 +341,7 @@ public class ListWidget extends AbstractParentElement implements Drawable, Selec
 		} else {
 			double d = Math.max(1, this.getMaxScroll());
 			int i = this.bottom - this.top;
-			int j = MathHelper.clamp((int)((float)(i * i) / (float)this.getMaxPosition()), 32, i - 8);
+			int j = Mth.clamp((int)((float)(i * i) / (float)this.getMaxPosition()), 32, i - 8);
 			double e = Math.max(1.0, d / (double)(i - j));
 			this.setScrollAmount(this.getScrollAmount() + deltaY * e);
 		}
@@ -393,7 +393,7 @@ public class ListWidget extends AbstractParentElement implements Drawable, Selec
 		if (!this.children().isEmpty()) {
 			int k;
 			int j = this.children().indexOf(this.getSelectedOrNull());
-			while (j != (k = MathHelper.clamp(j + i, 0, this.getEntryCount() - 1))) {
+			while (j != (k = Mth.clamp(j + i, 0, this.getEntryCount() - 1))) {
 				Entry entry = (Entry)this.children().get(k);
 				if (predicate.test(entry)) {
 					this.setSelected(entry);
@@ -410,10 +410,10 @@ public class ListWidget extends AbstractParentElement implements Drawable, Selec
 		return mouseY >= (double)this.top && mouseY <= (double)this.bottom && mouseX >= (double)this.left && mouseX <= (double)this.right;
 	}
 
-	protected void renderList(DrawContext draw, int x, int y, int mouseX, int mouseY, float delta) {
+	protected void renderList(GuiGraphics draw, int x, int y, int mouseX, int mouseY, float delta) {
 		int i = this.getEntryCount();
-		Tessellator tessellator = Tessellator.getInstance();
-		BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION);
+		Tesselator tessellator = Tesselator.getInstance();
+		BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, DefaultVertexFormat.POSITION);
 		for (int j = 0; j < i; ++j) {
 			int p;
 			int k = this.getRowTop(j);
@@ -437,14 +437,14 @@ public class ListWidget extends AbstractParentElement implements Drawable, Selec
 				bufferBuilder.vertex(q, m + n + 2, 0);
 				bufferBuilder.vertex(q, m - 2, 0);
 				bufferBuilder.vertex(p, m - 2, 0);
-                RenderLayers.debugQuads().draw(bufferBuilder.end());
+                ItemBlockRenderTypes.debugQuads().draw(bufferBuilder.end());
 //				RenderSystem.setShaderColor(0.0f, 0.0f, 0.0f, 1.0f);
-				bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION);
+				bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, DefaultVertexFormat.POSITION);
 				bufferBuilder.vertex(p + 1, m + n + 1, 0);
 				bufferBuilder.vertex(q - 1, m + n + 1, 0);
 				bufferBuilder.vertex(q - 1, m - 1, 0);
 				bufferBuilder.vertex(p + 1, m - 1, 0);
-                RenderLayers.debugQuads().draw(bufferBuilder.end());
+                ItemBlockRenderTypes.debugQuads().draw(bufferBuilder.end());
 			}
 			p = this.getRowLeft();
 			((Entry)entry).render(draw, j, k, p, o - 3, n, mouseX, mouseY, Objects.equals(this.hoveredEntry, entry), delta);
@@ -488,14 +488,14 @@ public class ListWidget extends AbstractParentElement implements Drawable, Selec
 	}
 
 	@Override
-	public Selectable.SelectionType getType() {
+	public NarratableEntry.NarrationPriority getType() {
 		if (this.isFocused()) {
-			return Selectable.SelectionType.FOCUSED;
+			return NarratableEntry.NarrationPriority.FOCUSED;
 		}
 		if (this.hoveredEntry != null) {
-			return Selectable.SelectionType.HOVERED;
+			return NarratableEntry.NarrationPriority.HOVERED;
 		}
-		return Selectable.SelectionType.NONE;
+		return NarratableEntry.NarrationPriority.NONE;
 	}
 
 	@Nullable
@@ -507,11 +507,11 @@ public class ListWidget extends AbstractParentElement implements Drawable, Selec
 		entry.parentList = this;
 	}
 
-	protected void appendNarrations(NarrationMessageBuilder builder, Entry entry) {
+	protected void appendNarrations(NarrationElementOutput builder, Entry entry) {
 		int i;
 		List<Entry> list = this.children();
 		if (list.size() > 1 && (i = list.indexOf(entry)) != -1) {
-			builder.put(NarrationPart.POSITION, (Text)EmiPort.translatable("narrator.position.list", i + 1, list.size()));
+			builder.put(NarratedElementType.POSITION, (Component)EmiPort.translatable("narrator.position.list", i + 1, list.size()));
 		}
 	}
 
@@ -527,21 +527,21 @@ public class ListWidget extends AbstractParentElement implements Drawable, Selec
 	}
 
 	@Override
-	public void appendNarrations(NarrationMessageBuilder var1) {
+	public void appendNarrations(NarrationElementOutput var1) {
 	}
 
-	public static abstract class Entry extends AbstractParentElement {
+	public static abstract class Entry extends AbstractContainerEventHandler {
 		public ListWidget parentList;
 
-		public abstract void render(DrawContext draw, int index, int y, int x, int width, int height, int mouseX, int mouseY,
-			boolean hovered, float delta);
+		public abstract void render(GuiGraphics draw, int index, int y, int x, int width, int height, int mouseX, int mouseY,
+                                    boolean hovered, float delta);
 
 		@Override
 		public boolean isMouseOver(double mouseX, double mouseY) {
 			return Objects.equals(this.parentList.getEntryAtPosition(mouseX, mouseY), this);
 		}
 
-		public List<TooltipComponent> getTooltip(int mouseX, int mouseY) {
+		public List<ClientTooltipComponent> getTooltip(int mouseX, int mouseY) {
 			return List.of();
 		}
 

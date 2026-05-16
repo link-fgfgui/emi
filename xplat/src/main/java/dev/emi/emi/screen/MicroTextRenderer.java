@@ -10,10 +10,10 @@ import dev.emi.emi.config.FluidUnit;
 import dev.emi.emi.runtime.EmiDrawContext;
 import it.unimi.dsi.fastutil.chars.Char2ObjectMap;
 import it.unimi.dsi.fastutil.chars.Char2ObjectOpenHashMap;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public class MicroTextRenderer {
-	private static final Identifier TEXTURE = EmiPort.id("emi", "textures/gui/microfont.png");
+	private static final ResourceLocation TEXTURE = EmiPort.id("emi", "textures/gui/microfont.png");
 	private static final Char2ObjectMap<MicroChar> MICRO_CHARS = new Char2ObjectOpenHashMap<>();
 	private static final List<UnitScale> QUANTITY_SCALES = List.of(
 		new UnitScale("", 0),

@@ -4,11 +4,11 @@ import org.spongepowered.asm.mixin.Mixin;
 
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.stack.EmiStackConvertible;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemConvertible;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.ItemLike;
 
-@Mixin(ItemConvertible.class)
-public interface ItemConvertibleMixin extends EmiStackConvertible {
+@Mixin(ItemLike.class)
+public interface ItemLikeMixin extends EmiStackConvertible {
 
 	@Override
 	default EmiStack emi() {

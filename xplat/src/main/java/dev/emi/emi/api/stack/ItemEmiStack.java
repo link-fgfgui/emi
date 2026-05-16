@@ -3,12 +3,12 @@ package dev.emi.emi.api.stack;
 import java.util.List;
 
 import net.minecraft.client.render.item.ItemRenderState;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.ComponentType;
-import net.minecraft.item.Item;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.world.item.Item;
 import net.minecraft.item.ItemDisplayContext;
-import net.minecraft.item.Items;
-import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.TooltipFlag;
 
 import org.jetbrains.annotations.ApiStatus;
 
@@ -21,22 +21,22 @@ import dev.emi.emi.platform.EmiAgnos;
 import dev.emi.emi.runtime.EmiDrawContext;
 import dev.emi.emi.screen.StackBatcher.Batchable;
 import dev.emi.emi.screen.tooltip.EmiTextTooltipWrapper;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.tooltip.OrderedTextTooltipComponent;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTextTooltip;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 @ApiStatus.Internal
 public class ItemEmiStack extends EmiStack implements Batchable {
-	private static final MinecraftClient client = MinecraftClient.getInstance();
+	private static final Minecraft client = Minecraft.getInstance();
 
 	private final Item item;
-	private final ComponentChanges componentChanges;
+	private final DataComponentPatch componentChanges;
 
 	private boolean unbatchable;
 
@@ -48,7 +48,7 @@ public class ItemEmiStack extends EmiStack implements Batchable {
 		this(stack.getItem(), stack.getComponentChanges(), amount);
 	}
 
-	public ItemEmiStack(Item item, ComponentChanges components, long amount) {
+	public ItemEmiStack(Item item, DataComponentPatch components, long amount) {
 		this.item = item;
 		this.componentChanges = components;
 		this.amount = amount;
@@ -74,12 +74,12 @@ public class ItemEmiStack extends EmiStack implements Batchable {
 	}
 
 	@Override
-	public ComponentChanges getComponentChanges() {
+	public DataComponentPatch getComponentChanges() {
 		return this.componentChanges;
 	}
 
 	@Override
-	public <T> @Nullable T get(ComponentType<? extends T> type) {
+	public <T> @Nullable T get(DataComponentType<? extends T> type) {
 		// Check the changes first
 		var changedOpt = this.componentChanges.get(type);
 		//noinspection OptionalAssignedToNull
@@ -96,7 +96,7 @@ public class ItemEmiStack extends EmiStack implements Batchable {
 	}
 
 	@Override
-	public Identifier getId() {
+	public ResourceLocation getId() {
 		return EmiPort.getItemRegistry().getId(item);
 	}
 
@@ -140,7 +140,7 @@ public class ItemEmiStack extends EmiStack implements Batchable {
 	}
 	
 	@Override
-	public void renderForBatch(VertexConsumerProvider vcp, DrawContext draw, int x, int y, int z, float delta) {
+	public void renderForBatch(MultiBufferSource vcp, DrawContext draw, int x, int y, int z, float delta) {
 //		EmiDrawContext context = EmiDrawContext.wrap(draw);
 //		ItemStack stack = getItemStack();
 //		ItemRenderer ir = client.getItemRenderer();
@@ -157,22 +157,22 @@ public class ItemEmiStack extends EmiStack implements Batchable {
 	}
 
 	@Override
-	public List<Text> getTooltipText() {
+	public List<Component> getTooltipText() {
 		if (client.isOnThread()) {
-			return getItemStack().getTooltip(Item.TooltipContext.create(client.world), client.player, TooltipType.BASIC);
+			return getItemStack().getTooltip(Item.TooltipContext.create(client.world), client.player, TooltipFlag.BASIC);
 		} else {
 			// Don't provide world or entity as context, as they are not thread safe
-			return getItemStack().getTooltip(Item.TooltipContext.create(client.world.getRegistryManager()), null, TooltipType.BASIC);
+			return getItemStack().getTooltip(Item.TooltipContext.create(client.world.getRegistryManager()), null, TooltipFlag.BASIC);
 		}
 	}
 
 	@Override
-	public List<TooltipComponent> getTooltip() {
+	public List<ClientTextTooltip> getTooltip() {
 		ItemStack stack = getItemStack();
-		List<TooltipComponent> list = Lists.newArrayList();
+		List<ClientTextTooltip> list = Lists.newArrayList();
 		if (!isEmpty()) {
 			list.addAll(EmiAgnos.getItemTooltip(stack));
-			if (!list.isEmpty() && list.get(0) instanceof OrderedTextTooltipComponent ottc) {
+			if (!list.isEmpty() && list.get(0) instanceof ClientTextTooltip ottc) {
 				list.set(0, new EmiTextTooltipWrapper(this, ottc));
 			}
 			//String namespace = EmiPort.getItemRegistry().getId(stack.getItem()).getNamespace();
@@ -184,7 +184,7 @@ public class ItemEmiStack extends EmiStack implements Batchable {
 	}
 
 	@Override
-	public Text getName() {
+	public Component getName() {
 		if (isEmpty()) {
 			return EmiPort.literal("");
 		}

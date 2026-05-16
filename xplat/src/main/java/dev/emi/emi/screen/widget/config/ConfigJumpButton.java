@@ -7,9 +7,9 @@ import dev.emi.emi.EmiRenderHelper;
 import dev.emi.emi.runtime.EmiDrawContext;
 import dev.emi.emi.screen.widget.SizedButtonWidget;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 
 public class ConfigJumpButton extends SizedButtonWidget {
 
@@ -38,8 +38,8 @@ public class ConfigJumpButton extends SizedButtonWidget {
             context.push();
 //            context.matrices().translate(0, 0, 100);
 //            context.disableDepthTest();
-            MinecraftClient client = MinecraftClient.getInstance();
-            EmiRenderHelper.drawTooltip(client.currentScreen, context, text.get().stream().map(EmiPort::ordered).map(TooltipComponent::of).toList(), mouseX, mouseY);
+            Minecraft client = Minecraft.getInstance();
+            EmiRenderHelper.drawTooltip(client.currentScreen, context, text.get().stream().map(EmiPort::ordered).map(ClientTooltipComponent::of).toList(), mouseX, mouseY);
             context.pop();
         }
 //        context.resetColor();

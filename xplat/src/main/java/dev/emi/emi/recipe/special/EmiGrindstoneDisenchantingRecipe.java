@@ -13,19 +13,19 @@ import dev.emi.emi.api.recipe.VanillaEmiRecipeCategories;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.tag.EnchantmentTags;
-import net.minecraft.util.Identifier;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.tags.EnchantmentTags;
+import net.minecraft.resources.ResourceLocation;
 
 public class EmiGrindstoneDisenchantingRecipe implements EmiRecipe {
-	private static final Identifier BACKGROUND = EmiPort.id("minecraft", "textures/gui/container/grindstone.png");
+	private static final ResourceLocation BACKGROUND = EmiPort.id("minecraft", "textures/gui/container/grindstone.png");
 	private final int uniq = EmiUtil.RANDOM.nextInt();
 	private final Item tool;
-	private final Identifier id;
+	private final ResourceLocation id;
 
-	public EmiGrindstoneDisenchantingRecipe(Item tool, Identifier id) {
+	public EmiGrindstoneDisenchantingRecipe(Item tool, ResourceLocation id) {
 		this.tool = tool;
 		this.id = id;
 	}
@@ -36,7 +36,7 @@ public class EmiGrindstoneDisenchantingRecipe implements EmiRecipe {
 	}
 
 	@Override
-	public Identifier getId() {
+	public ResourceLocation getId() {
 		return id;
 	}
 

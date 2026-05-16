@@ -30,25 +30,25 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenCustomHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
-import net.minecraft.block.Block;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.ComponentMap;
-import net.minecraft.fluid.FlowableFluid;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemGroups;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.tag.TagKey;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.world.level.material.FlowingFluid;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.tags.TagKey;
 
 public class EmiStackList {
-	private static final TagKey<Item> ITEM_HIDDEN = TagKey.of(EmiPort.getItemRegistry().getKey(), EmiTags.HIDDEN_FROM_RECIPE_VIEWERS);
+	private static final TagKey<BlockItem> ITEM_HIDDEN = TagKey.of(EmiPort.getItemRegistry().getKey(), EmiTags.HIDDEN_FROM_RECIPE_VIEWERS);
 	private static final TagKey<Block> BLOCK_HIDDEN = TagKey.of(EmiPort.getBlockRegistry().getKey(), EmiTags.HIDDEN_FROM_RECIPE_VIEWERS);
-	private static final TagKey<Fluid> FLUID_HIDDEN = TagKey.of(EmiPort.getFluidRegistry().getKey(), EmiTags.HIDDEN_FROM_RECIPE_VIEWERS);
+	private static final TagKey<FlowingFluid> FLUID_HIDDEN = TagKey.of(EmiPort.getFluidRegistry().getKey(), EmiTags.HIDDEN_FROM_RECIPE_VIEWERS);
 	public static List<EmiAlias.Baked> registryAliases = Lists.newArrayList();
 	public static List<Predicate<EmiStack>> invalidators = Lists.newArrayList();
 	public static List<EmiStack> stacks = List.of();
@@ -65,11 +65,11 @@ public class EmiStackList {
 	}
 
 	public static void reload() {
-		MinecraftClient client = MinecraftClient.getInstance();
-		ItemGroup.DisplayContext context = new ItemGroup.DisplayContext(client.player.networkHandler.getEnabledFeatures(), false, client.world.getRegistryManager());
+		Minecraft client = Minecraft.getInstance();
+		CreativeModeTab.ItemDisplayParameters context = new CreativeModeTab.DisplayContext(client.player.networkHandler.getEnabledFeatures(), false, client.world.getRegistryManager());
 		List<IndexGroup> groups = Lists.newArrayList();
 		Map<String, IndexGroup> namespaceGroups = new LinkedHashMap<>();
-		for (Item item : EmiPort.getItemRegistry()) {
+		for (BlockItem item : EmiPort.getItemRegistry()) {
 			String itemName = "null";
 			try {
 				itemName = item.toString();
@@ -83,9 +83,9 @@ public class EmiStackList {
 			// There is an unwritten convention that ItemGroup.updateEntries is only invoked on the main thread
 			long groupReloadStart = System.currentTimeMillis();
 			EmiLog.info("Reloading item groups on client thread...");
-			Map<ItemGroup, Collection<ItemStack>> itemGroupToStacksMap = client.submit(() -> {
-				Map<ItemGroup, Collection<ItemStack>> map = new Reference2ReferenceOpenHashMap<>();
-				Consumer<ItemGroup> itemGroupConsumer = group -> {
+			Map<CreativeModeTab, Collection<ItemStack>> itemGroupToStacksMap = client.submit(() -> {
+				Map<CreativeModeTab, Collection<ItemStack>> map = new Reference2ReferenceOpenHashMap<>();
+				Consumer<CreativeModeTab> itemGroupConsumer = group -> {
 					String groupName = "null";
 					try {
 						groupName = group.getDisplayName().toString();
@@ -95,15 +95,15 @@ public class EmiStackList {
 						EmiLog.error("Creative item group " + groupName + " threw while EMI was attempting to construct the index, items may be missing.", e);
 					}
 				};
-				List<ItemGroup> itemGroups = ItemGroups.getGroups();
+				List<CreativeModeTab> itemGroups = CreativeModeTabs.getGroups();
 				// Category item groups must be updated before non-category ones, otherwise the search group will
 				// read outdated item lists
-				itemGroups.stream().filter(g -> g.getType() == ItemGroup.Type.CATEGORY).forEach(itemGroupConsumer);
-				itemGroups.stream().filter(g -> g.getType() != ItemGroup.Type.CATEGORY).forEach(itemGroupConsumer);
+				itemGroups.stream().filter(g -> g.getType() == CreativeModeTab.Type.CATEGORY).forEach(itemGroupConsumer);
+				itemGroups.stream().filter(g -> g.getType() != CreativeModeTab.Type.CATEGORY).forEach(itemGroupConsumer);
 				return map;
 			}).join();
 			EmiLog.info("Reloading item groups on client thread took " + (System.currentTimeMillis() - groupReloadStart) + "ms");
-			for (ItemGroup group : ItemGroups.getGroups()) {
+			for (CreativeModeTab group : CreativeModeTabs.getGroups()) {
 				String groupName = "null";
 				try {
 					groupName = group.getDisplayName().getString();
@@ -134,11 +134,11 @@ public class EmiStackList {
 		}
 		groups.addAll(namespaceGroups.values());
 		IndexGroup fluidGroup = new IndexGroup();
-		for (Fluid fluid : EmiPort.getFluidRegistry()) {
+		for (FlowingFluid fluid : EmiPort.getFluidRegistry()) {
 			String fluidName = null;
 			try {
 				fluidName = fluid.toString();
-				if (fluid.isStill(fluid.getDefaultState()) || (fluid instanceof FlowableFluid ff && ff.getStill() == Fluids.EMPTY)) {
+				if (fluid.isStill(fluid.getDefaultState()) || (fluid instanceof FlowingFluid ff && ff.getStill() == Fluids.EMPTY)) {
 					EmiStack fs = EmiStack.of(fluid);
 					fluidGroup.stacks.add(fs);
 				}
@@ -165,13 +165,13 @@ public class EmiStackList {
 
 	@SuppressWarnings({"deprecation", "unchecked"})
 	private static <T> boolean isHiddenFromRecipeViewers(T key) {
-		if (key instanceof Item i) {
+		if (key instanceof BlockItem i) {
 			if (i instanceof BlockItem bi && bi.getBlock().getDefaultState().isIn(BLOCK_HIDDEN)) {
 				return true;
 			} else if (i.getRegistryEntry().isIn(ITEM_HIDDEN)) {
 				return true;
 			}
-		} else if (key instanceof Fluid f) {
+		} else if (key instanceof FlowingFluid f) {
 			if (f.isIn(FLUID_HIDDEN)) {
 				return true;
 			}
@@ -312,7 +312,7 @@ public class EmiStackList {
 		@Override
 		public int hashCode(EmiStack stack) {
 			if (stack != null) {
-				ComponentChanges changes = stack.getComponentChanges();
+				DataComponentPatch changes = stack.getComponentChanges();
 				int i = 31 + stack.getKey().hashCode();
 				return 31 * i + changes.hashCode();
 			}

@@ -8,25 +8,25 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import dev.emi.emi.mixin.accessor.BrewingRecipeRegistryAccessor;
+import dev.emi.emi.mixin.accessor.PotionBrewingAccessor;
 
 import net.minecraft.client.render.item.model.ItemModel;
-import net.minecraft.client.texture.SpriteAtlasTexture;
-import net.minecraft.client.util.SpriteIdentifier;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.item.PotionItem;
-import net.minecraft.recipe.Recipe;
-import net.minecraft.recipe.RecipeEntry;
-import net.minecraft.recipe.RecipeManager;
-import net.minecraft.recipe.RecipeType;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.PotionItem;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.recipe.display.SlotDisplayContexts;
-import net.minecraft.recipe.input.RecipeInput;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.world.item.crafting.RecipeInput;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.core.Holder;
 import net.minecraft.util.context.ContextParameterMap;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.ClientHooks;
 import org.apache.commons.lang3.text.WordUtils;
@@ -50,20 +50,20 @@ import dev.emi.emi.runtime.EmiDrawContext;
 import dev.emi.emi.runtime.EmiLog;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.client.texture.Sprite;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.potion.Potion;
-import net.minecraft.potion.Potions;
-import net.minecraft.recipe.BrewingRecipeRegistry;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.item.alchemy.PotionBrewing;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.common.brewing.BrewingRecipe;
 import net.neoforged.neoforge.common.brewing.IBrewingRecipe;
@@ -168,18 +168,18 @@ public class EmiAgnosNeoForge extends EmiAgnos {
 
 	@Override
 	protected void addBrewingRecipesAgnos(EmiRegistry registry) {
-        World world = MinecraftClient.getInstance().world;
-		BrewingRecipeRegistry brewingRegistry = world != null ? MinecraftClient.getInstance().world.getBrewingRecipeRegistry() : BrewingRecipeRegistry.EMPTY;
+        Level world = Minecraft.getInstance().world;
+		PotionBrewing brewingRegistry = world != null ? Minecraft.getInstance().world.getBrewingRecipeRegistry() : PotionBrewing.EMPTY;
         ContextParameterMap paramMap = SlotDisplayContexts.createParameters(world);
-        BrewingRecipeRegistryAccessor brewingRegistryAccess = (BrewingRecipeRegistryAccessor)brewingRegistry;
+        PotionBrewingAccessor brewingRegistryAccess = (PotionBrewingAccessor)brewingRegistry;
 
-        for (Ingredient ingredient : brewingRegistryAccess.getPotionTypes()) {
+        for (Ingredient ingredient : brewingRegistryAccess.getContainers()) {
 			for (ItemStack stack : ingredient.toDisplay().getStacks(paramMap)) {
 				String pid = EmiUtil.subId(stack.getItem());
-				for (BrewingRecipeRegistry.Recipe<Potion> recipe : brewingRegistryAccess.getPotionRecipes()) {
+				for (PotionBrewing.Mix<Potion> recipe : brewingRegistryAccess.getPotionMixes()) {
 					try {
 						if (!recipe.ingredient().toDisplay().getStacks(paramMap).isEmpty()) {
-							Identifier id = EmiPort.id("emi", "/brewing/" + pid
+							Material id = EmiPort.id("emi", "/brewing/" + pid
 								+ "/" + EmiUtil.subId(recipe.ingredient().toDisplay().getStacks(paramMap).getFirst().getItem())
 								+ "/" + EmiUtil.subId(EmiPort.getPotionRegistry().getId(recipe.from().value()))
 								+ "/" + EmiUtil.subId(EmiPort.getPotionRegistry().getId(recipe.to().value())));
@@ -194,16 +194,16 @@ public class EmiAgnosNeoForge extends EmiAgnos {
 			}
 		}
 
-		for (BrewingRecipeRegistry.Recipe<Item> recipe : brewingRegistryAccess.getItemRecipes()) {
+		for (PotionBrewing.Mix<PotionItem> recipe : brewingRegistryAccess.getContainerMixes()) {
 			try {
 				if (!recipe.ingredient().toDisplay().getStacks(paramMap).isEmpty()) {
 					String gid = EmiUtil.subId(recipe.ingredient().toDisplay().getStacks(paramMap).getFirst().getItem());
 					String iid = EmiUtil.subId(recipe.from().value());
 					String oid = EmiUtil.subId(recipe.to().value());
-					Consumer<RegistryEntry<Potion>> potionRecipeGen = entry -> {
+					Consumer<Holder<Potion>> potionRecipeGen = entry -> {
 						Potion potion = entry.value();
 						if (brewingRegistry.isBrewable(entry)) {
-							Identifier id = EmiPort.id("emi", "/brewing/item/"
+							Material id = EmiPort.id("emi", "/brewing/item/"
 								+ EmiUtil.subId(entry.getKey().get().getValue()) + "/" + gid + "/" + iid + "/" + oid);
 							registry.addRecipe(new EmiBrewingRecipe(
 								EmiStack.of(EmiPort.setPotion(new ItemStack(recipe.from().value()), potion)), EmiIngredient.of(recipe.ingredient()),
@@ -228,7 +228,7 @@ public class EmiAgnosNeoForge extends EmiAgnos {
 						EmiStack input = EmiStack.of(is);
 						EmiIngredient ingredient = EmiIngredient.of(recipe.getIngredient());
 						EmiStack output = EmiStack.of(recipe.getOutput(is, recipe.getIngredient().toDisplay().getStacks(paramMap).getFirst()));
-						Identifier id = EmiPort.id("emi", "/brewing/neoforge/"
+						Material id = EmiPort.id("emi", "/brewing/neoforge/"
 							+ EmiUtil.subId(input.getId()) + "/"
 							+ EmiUtil.subId(ingredient.getEmiStacks().get(0).getId()) + "/"
 							+ EmiUtil.subId(output.getId()));
@@ -262,23 +262,23 @@ public class EmiAgnosNeoForge extends EmiAgnos {
 	}
 
 	@Override
-	protected List<TooltipComponent> getItemTooltipAgnos(ItemStack stack) {
-		MinecraftClient client = MinecraftClient.getInstance();
+	protected List<ClientTooltipComponent> getItemTooltipAgnos(ItemStack stack) {
+		Minecraft client = Minecraft.getInstance();
 		return ClientHooks.gatherTooltipComponents(stack, Screen.getTooltipFromItem(client, stack), stack.getTooltipData(), 0, Integer.MAX_VALUE, Integer.MAX_VALUE, client.textRenderer);
 	}
 
 	@Override
-	protected Text getFluidNameAgnos(Fluid fluid, ComponentChanges componentChanges) {
+	protected Component getFluidNameAgnos(Fluid fluid, DataComponentPatch componentChanges) {
 		return new FluidStack(fluid.getRegistryEntry(), 1000, componentChanges).getHoverName();
 	}
 
 	@Override
-	protected List<Text> getFluidTooltipAgnos(Fluid fluid, ComponentChanges componentChanges) {
-		List<Text> tooltip = Lists.newArrayList();
+	protected List<Component> getFluidTooltipAgnos(Fluid fluid, DataComponentPatch componentChanges) {
+		List<Component> tooltip = Lists.newArrayList();
 		tooltip.add(getFluidName(fluid, componentChanges));
-		MinecraftClient client = MinecraftClient.getInstance();
+		Minecraft client = Minecraft.getInstance();
 		if (client.options.advancedItemTooltips) {
-			tooltip.add(EmiPort.literal(EmiPort.getFluidRegistry().getId(fluid).toString()).formatted(Formatting.DARK_GRAY));
+			tooltip.add(EmiPort.literal(EmiPort.getFluidRegistry().getId(fluid).toString()).formatted(ChatFormatting.DARK_GRAY));
 		}
 		return tooltip;
 	}
@@ -294,13 +294,13 @@ public class EmiAgnosNeoForge extends EmiAgnos {
                                     int yOff, int width, int height) {
         FluidStack fs = new FluidStack(stack.getKeyOfType(Fluid.class).getRegistryEntry(), 1000, stack.getComponentChanges());
         IClientFluidTypeExtensions ext = IClientFluidTypeExtensions.of(fs.getFluid());
-        Identifier texture = ext.getStillTexture(fs);
+        Material texture = ext.getStillTexture(fs);
         if (texture == null) {
             return;
         }
         int color = ext.getTintColor(fs);
-        MinecraftClient client = MinecraftClient.getInstance();
-        Sprite sprite = client.getAtlasManager().getSprite(new SpriteIdentifier(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, texture));
+        Minecraft client = Minecraft.getInstance();
+        TextureAtlasSprite sprite = client.getAtlasManager().getSprite(new SpriteIdentifier(TextureAtlas.BLOCK_ATLAS_TEXTURE, texture));
         EmiRenderHelper.drawTintedSprite(context, sprite, color, x, y, xOff, yOff, width, height);
     }
 
@@ -322,10 +322,10 @@ public class EmiAgnosNeoForge extends EmiAgnos {
 	}
 
 	@Override
-	protected Map<Item, Integer> getFuelMapAgnos() {
-		Object2IntMap<Item> fuelMap = new Object2IntOpenHashMap<>();
-		for (Item item : EmiPort.getItemRegistry()) {
-			int time = item.getDefaultStack().getBurnTime(RecipeType.SMELTING, MinecraftClient.getInstance().world.getFuelRegistry());
+	protected Map<PotionItem, Integer> getFuelMapAgnos() {
+		Object2IntMap<PotionItem> fuelMap = new Object2IntOpenHashMap<>();
+		for (PotionItem item : EmiPort.getItemRegistry()) {
+			int time = item.getDefaultStack().getBurnTime(RecipeType.SMELTING, Minecraft.getInstance().world.getFuelRegistry());
 			if (time > 0) {
 				fuelMap.put(item, time);
 			}
@@ -334,8 +334,8 @@ public class EmiAgnosNeoForge extends EmiAgnos {
 	}
 
 	@Override
-	protected ItemModel getBakedTagModelAgnos(Identifier id) {
-        return MinecraftClient.getInstance().getBakedModelManager().getItemModel(id);
+	protected ItemModel getBakedTagModelAgnos(Material id) {
+        return Minecraft.getInstance().getBakedModelManager().getItemModel(id);
 	}
 
 	@Override
@@ -347,32 +347,32 @@ public class EmiAgnosNeoForge extends EmiAgnos {
 	}
 
     @Override
-    protected <I extends RecipeInput, T extends Recipe<I>> Collection<RecipeEntry<T>> getAllRecipesOfTypeAgnos(
+    protected <I extends RecipeInput, T extends Recipe<I>> Collection<RecipeHolder<T>> getAllRecipesOfTypeAgnos(
             RecipeManager recipeManager,
             RecipeType<T> recipeType) {
         return EmiClientNeoForge.SYNCED_RECIPES.getAll(recipeType);
     }
 
     @Override
-    protected <I extends RecipeInput, T extends Recipe<I>> Stream<RecipeEntry<T>> getAllMatchesRecipeAgnos(
-            RecipeManager recipeManager, RecipeType<T> recipeType, I input, World world) {
+    protected <I extends RecipeInput, T extends Recipe<I>> Stream<RecipeHolder<T>> getAllMatchesRecipeAgnos(
+            RecipeManager recipeManager, RecipeType<T> recipeType, I input, Level world) {
         return EmiClientNeoForge.SYNCED_RECIPES.find(recipeType, input, world);
     }
 
     @Override
-    protected <I extends RecipeInput, T extends Recipe<I>> Optional<RecipeEntry<T>> getFirstMatchRecipeAgnos(
-            RecipeManager recipeManager, RecipeType<T> recipeType, I input, World world) {
+    protected <I extends RecipeInput, T extends Recipe<I>> Optional<RecipeHolder<T>> getFirstMatchRecipeAgnos(
+            RecipeManager recipeManager, RecipeType<T> recipeType, I input, Level world) {
         return EmiClientNeoForge.SYNCED_RECIPES.find(recipeType, input, world).findFirst();
     }
 
     @Override
-    protected Collection<RecipeEntry<?>> getAllRecipesAgnos(RecipeManager recipeManager) {
+    protected Collection<RecipeHolder<?>> getAllRecipesAgnos(RecipeManager recipeManager) {
         return EmiClientNeoForge.SYNCED_RECIPES.recipes();
     }
 
     @Override
-    protected RecipeEntry<?> getRecipeAgnos(RecipeManager recipeManager, Identifier id) {
-        return EmiClientNeoForge.SYNCED_RECIPES.get(RegistryKey.of(RegistryKeys.RECIPE, id));
+    protected RecipeHolder<?> getRecipeAgnos(RecipeManager recipeManager, Material id) {
+        return EmiClientNeoForge.SYNCED_RECIPES.get(ResourceKey.of(Registries.RECIPE, id));
     }
 
 }

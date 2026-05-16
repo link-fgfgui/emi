@@ -11,20 +11,20 @@ import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.GeneratedSlotWidget;
 import dev.emi.emi.api.widget.SlotWidget;
-import net.minecraft.block.entity.BannerPattern;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.BannerPatternsComponent;
-import net.minecraft.item.BannerItem;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.Identifier;
+import net.minecraft.world.level.block.entity.BannerPattern;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.level.block.entity.BannerPatternLayers;
+import net.minecraft.world.item.BannerItem;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 
 public class EmiBannerShieldRecipe extends EmiPatternCraftingRecipe {
-	public static final List<Item> BANNERS = List.of(
+	public static final List<BannerItem> BANNERS = List.of(
 		Items.WHITE_BANNER, Items.ORANGE_BANNER, Items.MAGENTA_BANNER, Items.LIGHT_BLUE_BANNER,
 		Items.YELLOW_BANNER, Items.LIME_BANNER, Items.PINK_BANNER, Items.GRAY_BANNER,
 		Items.LIGHT_GRAY_BANNER, Items.CYAN_BANNER, Items.PURPLE_BANNER, Items.BLUE_BANNER,
@@ -34,7 +34,7 @@ public class EmiBannerShieldRecipe extends EmiPatternCraftingRecipe {
 	public static final EmiStack SHIELD = EmiStack.of(Items.SHIELD);
 
 	@SuppressWarnings("unchecked")
-	public EmiBannerShieldRecipe(Identifier id) {
+	public EmiBannerShieldRecipe(ResourceLocation id) {
 		super((List<EmiIngredient>) (List<?>) Stream.concat(Stream.of(SHIELD), EMI_BANNERS.stream()).toList(), EmiStack.of(Items.SHIELD), id);
 	}
 
@@ -53,19 +53,19 @@ public class EmiBannerShieldRecipe extends EmiPatternCraftingRecipe {
 		return new GeneratedSlotWidget(r -> getPattern(r, Items.SHIELD), unique, x, y);
 	}
 	
-	public EmiStack getPattern(Random random, Item item) {
+	public EmiStack getPattern(Random random, BannerItem item) {
 		int base = random.nextInt(BANNERS.size());
 		if (item == null) {
 			item = BANNERS.get(base);
 		}
 		ItemStack stack = new ItemStack(item);
 		int patterns = 1 + Math.max(random.nextInt(5), random.nextInt(3));
-		BannerPatternsComponent pattern = BannerPatternsComponent.DEFAULT;
+		BannerPatternLayers pattern = BannerPatternLayers.DEFAULT;
 		for (int i = 0; i < patterns; i++) {
 			pattern = EmiPort.addRandomBanner(pattern, random);
 		}
 
-		stack.set(DataComponentTypes.BANNER_PATTERNS, pattern);
+		stack.set(DataComponents.BANNER_PATTERNS, pattern);
 
 		return EmiStack.of(stack);
 	}

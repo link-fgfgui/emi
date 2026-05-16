@@ -13,9 +13,9 @@ import dev.emi.emi.bom.BoM;
 import dev.emi.emi.runtime.EmiDrawContext;
 import dev.emi.emi.runtime.EmiHistory;
 import dev.emi.emi.widget.RecipeDefaultButtonWidget;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 
 public class ResolutionButtonWidget extends ButtonWidget {
 	public Supplier<Widget> hoveredWidget;
@@ -46,7 +46,7 @@ public class ResolutionButtonWidget extends ButtonWidget {
 		EmiTexture.SLOT.render(context.raw(), x, y, delta);
 		context.drawTexture(EmiRenderHelper.WIDGETS, x, y, u, 128, width, height);
 		if (this.isHovered()) {
-			MinecraftClient client = MinecraftClient.getInstance();
+			Minecraft client = Minecraft.getInstance();
 			raw.drawTooltip(client.textRenderer, List.of(
 				EmiPort.translatable("tooltip.emi.resolution"),
 				EmiPort.translatable("tooltip.emi.select_resolution"),

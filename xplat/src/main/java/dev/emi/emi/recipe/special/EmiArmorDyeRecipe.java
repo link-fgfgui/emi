@@ -12,18 +12,18 @@ import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.GeneratedSlotWidget;
 import dev.emi.emi.api.widget.SlotWidget;
-import net.minecraft.component.type.DyedColorComponent;
-import net.minecraft.item.DyeItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.DyeColor;
-import net.minecraft.util.Identifier;
+import net.minecraft.world.item.component.DyedItemColor;
+import net.minecraft.world.item.DyeItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.resources.ResourceLocation;
 
 public class EmiArmorDyeRecipe extends EmiPatternCraftingRecipe {
 	private static final List<DyeItem> DYES = Stream.of(DyeColor.values()).map(c -> DyeItem.byColor(c)).collect(Collectors.toList());
-	private final Item armor;
+	private final DyeItem armor;
 
-	public EmiArmorDyeRecipe(Item armor, Identifier id) {
+	public EmiArmorDyeRecipe(DyeItem armor, ResourceLocation id) {
 		super(List.of(
 			EmiIngredient.of(DYES.stream().map(i -> (EmiIngredient) EmiStack.of(i)).collect(Collectors.toList())),
 			EmiStack.of(armor)), EmiStack.of(armor), id);
@@ -49,7 +49,7 @@ public class EmiArmorDyeRecipe extends EmiPatternCraftingRecipe {
 	@Override
 	public SlotWidget getOutputWidget(int x, int y) {
 		return new GeneratedSlotWidget(r -> {
-			return EmiStack.of(DyedColorComponent.setColor(new ItemStack(armor), getDyes(r)));
+			return EmiStack.of(DyedItemColor.setColor(new ItemStack(armor), getDyes(r)));
 		}, unique, x, y);
 	}
 	

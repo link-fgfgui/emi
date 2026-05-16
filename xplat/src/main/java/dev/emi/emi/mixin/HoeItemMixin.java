@@ -9,22 +9,22 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import dev.emi.emi.platform.EmiClient;
-import net.minecraft.block.BlockState;
-import net.minecraft.item.HoeItem;
-import net.minecraft.item.ItemConvertible;
-import net.minecraft.item.ItemUsageContext;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.item.HoeItem;
+import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.item.context.UseOnContext;
 
 @Mixin(HoeItem.class)
 public class HoeItemMixin {
 
-	@Inject(at = @At("RETURN"), method = "createTillAction")
-	private static void createTillAction(BlockState result, CallbackInfoReturnable<Consumer<ItemUsageContext>> info) {
+	@Inject(at = @At("RETURN"), method = "changeIntoState")
+	private static void createTillAction(BlockState result, CallbackInfoReturnable<Consumer<UseOnContext>> info) {
 		EmiClient.HOE_ACTIONS.put(info.getReturnValue(), List.of(result.getBlock()));
 	}
 
-	@Inject(at = @At("RETURN"), method = "createTillAndDropAction")
-	private static void createTillAndDropAction(BlockState result, ItemConvertible droppedItem,
-			CallbackInfoReturnable<Consumer<ItemUsageContext>> info) {
+	@Inject(at = @At("RETURN"), method = "changeIntoStateAndDropItem")
+	private static void createTillAndDropAction(BlockState result, ItemLike droppedItem,
+                                                CallbackInfoReturnable<Consumer<UseOnContext>> info) {
 		EmiClient.HOE_ACTIONS.put(info.getReturnValue(), List.of(droppedItem, result.getBlock()));
 	}
 }

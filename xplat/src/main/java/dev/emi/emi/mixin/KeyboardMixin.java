@@ -1,3 +1,4 @@
+// TODO(Ravel): Failed to fully resolve file: null cannot be cast to non-null type com.intellij.psi.PsiClass
 package dev.emi.emi.mixin;
 
 import org.spongepowered.asm.mixin.Final;
@@ -9,25 +10,25 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import dev.emi.emi.runtime.EmiLog;
 import dev.emi.emi.screen.EmiScreenManager;
-import net.minecraft.client.Keyboard;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
+import net.minecraft.client.KeyboardHandler;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.CharInput;
 import net.minecraft.client.input.KeyInput;
 
-@Mixin(Keyboard.class)
-public class KeyboardMixin {
+@Mixin(KeyboardHandler.class)
+public class KeyboardHandlerMixin {
 	@Shadow @Final
-	private MinecraftClient client;
+	private Minecraft minecraft;
 	
 	@Inject(at = @At(value = "INVOKE", target =
-			"Lnet/minecraft/client/gui/screen/Screen;keyPressed(Lnet/minecraft/client/input/KeyInput;)Z"),
-		method = "onKey", cancellable = true)
+            "Lnet/minecraft/client/gui/screens/Screen;keyPressed(Lnet/minecraft/client/input/KeyInput;)Z"),
+		method = "keyPress", cancellable = true)
 	public void onKey(long window, int action, KeyInput input, CallbackInfo info) {
 		try {
 			Screen screen = client.currentScreen;
-			if (screen instanceof HandledScreen<?> hs) {
+			if (screen instanceof AbstractContainerScreen<?> hs) {
 				if (action == 1 || action == 2) {
 					if (EmiScreenManager.keyPressed(input)) {
 						info.cancel();
@@ -40,12 +41,12 @@ public class KeyboardMixin {
 	}
 	
 	@Inject(at = @At("HEAD"),
-		method = "onChar", cancellable = true)
+		method = "charTyped", cancellable = true)
 	public void onChar(long window, CharInput input, CallbackInfo info) {
 		try {
 			if (window == client.getWindow().getHandle()) {
 				Screen screen = client.currentScreen;
-				if (screen instanceof HandledScreen<?> hs && this.client.getOverlay() == null) {
+				if (screen instanceof AbstractContainerScreen<?> hs && this.client.getOverlay() == null) {
 					boolean consume = false;
 					if (Character.charCount(input.codepoint()) == 1) {
 						consume = EmiScreenManager.search.charTyped(input) || consume;

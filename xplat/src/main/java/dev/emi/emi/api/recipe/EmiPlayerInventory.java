@@ -25,11 +25,11 @@ import dev.emi.emi.registry.EmiStackList;
 import dev.emi.emi.runtime.EmiFavorite;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.slot.Slot;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.inventory.Slot;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class EmiPlayerInventory {
@@ -39,8 +39,8 @@ public class EmiPlayerInventory {
 	
 	@Deprecated
 	@ApiStatus.Internal
-	public EmiPlayerInventory(PlayerEntity entity) {
-		HandledScreen<?> screen = EmiApi.getHandledScreen();
+	public EmiPlayerInventory(Player entity) {
+		AbstractContainerScreen<?> screen = EmiApi.getHandledScreen();
 		if (screen != null && screen.getScreenHandler() != null) {
 			if (screen.getScreenHandler().getCursorStack() != null) {
 				addStack(screen.getScreenHandler().getCursorStack());
@@ -59,7 +59,7 @@ public class EmiPlayerInventory {
 			}
 		}
 
-		PlayerInventory pInv = entity.getInventory();
+		Inventory pInv = entity.getInventory();
 		for (int i = 0; i < pInv.getMainStacks().size(); i++) {
 			addStack(pInv.getMainStacks().get(i));
 		}
@@ -69,7 +69,7 @@ public class EmiPlayerInventory {
 		for (EmiStack stack : stacks) {
 			addStack(stack);
 		}
-		HandledScreen<?> screen = EmiApi.getHandledScreen();
+		AbstractContainerScreen<?> screen = EmiApi.getHandledScreen();
 		if (screen != null && screen.getScreenHandler() != null) {
 			if (screen.getScreenHandler().getCursorStack() != null) {
 				addStack(screen.getScreenHandler().getCursorStack());
@@ -77,12 +77,12 @@ public class EmiPlayerInventory {
 		}
 	}
 
-	public static EmiPlayerInventory of(PlayerEntity entity) {
-		HandledScreen<?> screen = EmiApi.getHandledScreen();
+	public static EmiPlayerInventory of(Player entity) {
+		AbstractContainerScreen<?> screen = EmiApi.getHandledScreen();
 		if (screen != null) {
 			List<EmiRecipeHandler<?>> handlers = (List) EmiRecipeFiller.getAllHandlers(screen);
 			if (!handlers.isEmpty()) {
-				return handlers.get(0).getInventory((HandledScreen) screen);
+				return handlers.get(0).getInventory((AbstractContainerScreen) screen);
 			}
 		}
 		if (entity == null) {
@@ -103,7 +103,7 @@ public class EmiPlayerInventory {
 	}
 
 	public Predicate<EmiRecipe> getPredicate() {
-		HandledScreen screen = EmiApi.getHandledScreen();
+		AbstractContainerScreen screen = EmiApi.getHandledScreen();
 		List<EmiRecipeHandler> handlers = EmiRecipeFiller.getAllHandlers(screen);
 		if (!handlers.isEmpty()) {
 			EmiCraftContext context = new EmiCraftContext(screen, this, EmiCraftContext.Type.CRAFTABLE);

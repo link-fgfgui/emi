@@ -8,20 +8,20 @@ import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
 import dev.emi.emi.runtime.EmiDrawContext;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 public class EmiInfoRecipe implements EmiRecipe {
 	private static final int STACK_WIDTH = 6, MAX_STACKS = STACK_WIDTH * 3;
 	private static final int PADDING = 4;
-	private static final MinecraftClient CLIENT = MinecraftClient.getInstance();
+	private static final Minecraft CLIENT = Minecraft.getInstance();
 	private final List<EmiIngredient> stacks;
-	private final List<OrderedText> text;
-	private final Identifier id;
+	private final List<FormattedCharSequence> text;
+	private final ResourceLocation id;
 
-	public EmiInfoRecipe(List<EmiIngredient> stacks, List<Text> text, @Nullable Identifier id) {
+	public EmiInfoRecipe(List<EmiIngredient> stacks, List<FormattedCharSequence> text, @Nullable ResourceLocation id) {
 		this.stacks = stacks;
 		this.text = text.stream().flatMap(t -> CLIENT.textRenderer.wrapLines(t, getDisplayWidth() - 4).stream()).toList();
 		this.id = id;
@@ -33,7 +33,7 @@ public class EmiInfoRecipe implements EmiRecipe {
 	}
 
 	@Override
-	public @Nullable Identifier getId() {
+	public @Nullable ResourceLocation getId() {
 		return id;
 	}
 
@@ -99,18 +99,18 @@ public class EmiInfoRecipe implements EmiRecipe {
 				if (l >= manager.lines.size()) {
 					return;
 				}
-				OrderedText text = manager.lines.get(l);
+				FormattedCharSequence text = manager.lines.get(l);
 				context.drawText(text, 0, y - y + i * CLIENT.textRenderer.fontHeight, 0);
 			}
 		});
 	}
 
 	private static class PageManager {
-		public final List<OrderedText> lines;
+		public final List<FormattedCharSequence> lines;
 		public final int pageSize;
 		public int currentPage;
 
-		public PageManager(List<OrderedText> lines, int pageSize) {
+		public PageManager(List<FormattedCharSequence> lines, int pageSize) {
 			this.lines = lines;
 			this.pageSize = pageSize;
 		}

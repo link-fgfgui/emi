@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public interface EmiRecipeManager {
 	
@@ -18,7 +18,7 @@ public interface EmiRecipeManager {
 
 	List<EmiRecipe> getRecipes(EmiRecipeCategory category);
 
-	@Nullable EmiRecipe getRecipe(Identifier id);
+	@Nullable EmiRecipe getRecipe(ResourceLocation id);
 
 	List<EmiRecipe> getRecipesByInput(EmiStack stack);
 

@@ -6,17 +6,17 @@ import java.util.Set;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public class TagExclusions {
-	public final Set<Identifier> globalExclusions = Sets.newHashSet();
-	public final Map<Identifier, Set<Identifier>> exclusions = Maps.newHashMap();
+	public final Set<ResourceLocation> globalExclusions = Sets.newHashSet();
+	public final Map<ResourceLocation, Set<ResourceLocation>> exclusions = Maps.newHashMap();
 
-	public void add(Identifier id) {
+	public void add(ResourceLocation id) {
 		globalExclusions.add(id);
 	}
 
-	public void add(Identifier type, Identifier id) {
+	public void add(ResourceLocation type, ResourceLocation id) {
 		exclusions.computeIfAbsent(type, t -> Sets.newHashSet()).add(id);
 	}
 
@@ -25,7 +25,7 @@ public class TagExclusions {
 		exclusions.clear();
 	}
 
-	public boolean contains(Identifier type, Identifier id) {
+	public boolean contains(ResourceLocation type, ResourceLocation id) {
 		return globalExclusions.contains(id) || (exclusions.containsKey(type) && exclusions.get(type).contains(id));
 	}
 }

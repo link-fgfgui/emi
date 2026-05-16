@@ -10,19 +10,19 @@ import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.GeneratedSlotWidget;
 import dev.emi.emi.api.widget.SlotWidget;
-import net.minecraft.block.FlowerBlock;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.util.Identifier;
+import net.minecraft.world.level.block.FlowerBlock;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.resources.ResourceLocation;
 
 public class EmiSuspiciousStewRecipe extends EmiPatternCraftingRecipe {
-	private static final List<Item> FLOWERS = EmiPort.getItemRegistry().stream()
+	private static final List<BlockItem> FLOWERS = EmiPort.getItemRegistry().stream()
 		.filter(i -> i instanceof BlockItem bi && bi.getBlock() instanceof FlowerBlock).collect(Collectors.toList());
 
-	public EmiSuspiciousStewRecipe(Identifier id) {
+	public EmiSuspiciousStewRecipe(ResourceLocation id) {
 		super(List.of(
 				EmiStack.of(Items.BOWL),
 				EmiStack.of(Items.RED_MUSHROOM),
@@ -50,12 +50,12 @@ public class EmiSuspiciousStewRecipe extends EmiPatternCraftingRecipe {
 		return new GeneratedSlotWidget(r -> {
 			FlowerBlock block = (FlowerBlock) ((BlockItem) getFlower(r)).getBlock();
 			ItemStack stack = new ItemStack(Items.SUSPICIOUS_STEW);
-			stack.set(DataComponentTypes.SUSPICIOUS_STEW_EFFECTS, block.getStewEffects());
+			stack.set(DataComponents.SUSPICIOUS_STEW_EFFECTS, block.getStewEffects());
 			return EmiStack.of(stack);
 		}, unique, x, y);
 	}
 	
-	private Item getFlower(Random random) {
+	private BlockItem getFlower(Random random) {
 		return FLOWERS.get(random.nextInt(FLOWERS.size()));
 	}
 }

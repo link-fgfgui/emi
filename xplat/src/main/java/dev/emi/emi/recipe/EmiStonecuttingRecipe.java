@@ -10,15 +10,15 @@ import dev.emi.emi.api.render.EmiTexture;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
-import net.minecraft.recipe.StonecuttingRecipe;
-import net.minecraft.util.Identifier;
+import net.minecraft.world.item.crafting.StonecutterRecipe;
+import net.minecraft.resources.ResourceLocation;
 
 public class EmiStonecuttingRecipe implements EmiRecipe {
-	private final Identifier id;
+	private final ResourceLocation id;
 	private final EmiIngredient input;
 	private final EmiStack output;
 	
-	public EmiStonecuttingRecipe(StonecuttingRecipe recipe) {
+	public EmiStonecuttingRecipe(StonecutterRecipe recipe) {
 		this.id = EmiPort.getId(recipe);
 		input = EmiIngredient.of(recipe.ingredient());
 		output = EmiStack.of(EmiPort.getOutput(recipe));
@@ -30,7 +30,7 @@ public class EmiStonecuttingRecipe implements EmiRecipe {
 	}
 
 	@Override
-	public Identifier getId() {
+	public ResourceLocation getId() {
 		return id;
 	}
 

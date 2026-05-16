@@ -7,10 +7,10 @@
   "mixins": [],
   "client": [
     "conversion.FluidMixin",
-    "conversion.ItemConvertibleMixin",
+    "conversion.ItemLikeMixin",
     "conversion.ItemStackMixin",
-    "ClientConfigurationNetworkHandlerMixin",
-    "ClientPlayNetworkHandlerMixin"
+    "ClientConfigurationPacketListenerImplMixin",
+    "ClientPacketListenerMixin"
   ],
   "server": [],
   "injectors": {

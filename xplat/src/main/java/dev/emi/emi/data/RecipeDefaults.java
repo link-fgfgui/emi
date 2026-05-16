@@ -14,19 +14,19 @@ import dev.emi.emi.api.recipe.EmiRecipeManager;
 import dev.emi.emi.api.recipe.EmiResolutionRecipe;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.serializer.EmiIngredientSerializer;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
 
 public class RecipeDefaults {
-	public final List<Identifier> added = Lists.newArrayList();
+	public final List<ResourceLocation> added = Lists.newArrayList();
 	public final List<Resolution> resolutions = Lists.newArrayList();
 	public final List<Tag> tags = Lists.newArrayList();
 
-	public void add(Identifier id) {
+	public void add(ResourceLocation id) {
 		added.add(id);
 	}
 
-	public void add(Identifier id, JsonArray arr) {
+	public void add(ResourceLocation id, JsonArray arr) {
 		resolutions.add(new Resolution(id, arr.asList()));
 	}
 
@@ -34,7 +34,7 @@ public class RecipeDefaults {
 		tags.add(new Tag(tag, stack));
 	}
 
-	public void remove(Identifier id) {
+	public void remove(ResourceLocation id) {
 		added.remove(id);
 		resolutions.removeIf(r -> r.recipe.equals(id));
 	}
@@ -47,12 +47,12 @@ public class RecipeDefaults {
 
 	public Map<EmiIngredient, EmiRecipe> bake() {
 		Map<EmiIngredient, EmiRecipe> map = Maps.newHashMap();
-		MinecraftClient client = MinecraftClient.getInstance();
+		Minecraft client = Minecraft.getInstance();
 		if (client.world == null) {
 			return map;
 		}
 		EmiRecipeManager manager = EmiApi.getRecipeManager();
-		for (Identifier id : added) {
+		for (ResourceLocation id : added) {
 			EmiRecipe recipe = manager.getRecipe(id);
 			if (recipe != null) {
 				for (EmiIngredient stack : recipe.getOutputs()) {
@@ -81,7 +81,7 @@ public class RecipeDefaults {
 		return map;
 	}
 
-	public static record Resolution(Identifier recipe, List<JsonElement> stacks) {
+	public static record Resolution(ResourceLocation recipe, List<JsonElement> stacks) {
 	}
 
 	public static record Tag(JsonElement tag, JsonElement stack) {

@@ -3,8 +3,8 @@ package dev.emi.emi.mixin.accessor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.SmithingTransformRecipe;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.SmithingTransformRecipe;
 
 import java.util.Optional;
 
@@ -15,7 +15,7 @@ public interface SmithingTransformRecipeAccessor {
     Optional<Ingredient> getTemplate();
 
 	@Accessor("base")
-	Ingredient getBase();
+    Ingredient getBase();
 
 	@Accessor("addition")
     Optional<Ingredient> getAddition();

@@ -3,7 +3,7 @@ package dev.emi.emi.screen.tooltip;
 import dev.emi.emi.EmiRenderHelper;
 import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.runtime.EmiDrawContext;
-import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.Font;
 
 public class RecipeTooltipComponent implements EmiTooltipComponent {
 	private final EmiRecipe recipe;
@@ -35,12 +35,12 @@ public class RecipeTooltipComponent implements EmiTooltipComponent {
 	}
 
 	@Override
-	public int getHeight(TextRenderer textRenderer) {
+	public int getHeight(Font textRenderer) {
 		return height;
 	}
 
 	@Override
-	public int getWidth(TextRenderer textRenderer) {
+	public int getWidth(Font textRenderer) {
 		return width;
 	}
 

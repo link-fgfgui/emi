@@ -6,11 +6,11 @@ import dev.emi.emi.EmiPort;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.runtime.EmiDrawContext;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.Font;
+import net.minecraft.resources.ResourceLocation;
 
 public class TagTooltipComponent implements EmiTooltipComponent {
-	private static final Identifier TEXTURE = EmiPort.id("emi", "textures/gui/widgets.png");
+	private static final ResourceLocation TEXTURE = EmiPort.id("emi", "textures/gui/widgets.png");
 	private static final int MAX_DISPLAYED = 63;
 	private final List<EmiStack> stacks;
 
@@ -29,7 +29,7 @@ public class TagTooltipComponent implements EmiTooltipComponent {
 	}
 
 	@Override
-	public int getHeight(TextRenderer textRenderer) {
+	public int getHeight(Font textRenderer) {
 		int s = stacks.size();
 		if (s > MAX_DISPLAYED) {
 			s = MAX_DISPLAYED;
@@ -38,7 +38,7 @@ public class TagTooltipComponent implements EmiTooltipComponent {
 	}
 
     @Override
-	public int getWidth(TextRenderer textRenderer) {
+	public int getWidth(Font textRenderer) {
 		return 18 * getStackWidth();
 	}
 

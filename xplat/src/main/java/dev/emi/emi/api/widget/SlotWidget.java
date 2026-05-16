@@ -24,16 +24,16 @@ import dev.emi.emi.screen.EmiScreenManager;
 import dev.emi.emi.screen.RecipeScreen;
 import dev.emi.emi.screen.tooltip.EmiTooltip;
 import dev.emi.emi.screen.tooltip.RecipeCostTooltipComponent;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
+import net.minecraft.resources.ResourceLocation;
 
 public class SlotWidget extends Widget {
 	protected final EmiIngredient stack;
 	protected final int x, y;
-	protected Identifier textureId;
+	protected ResourceLocation textureId;
 	protected int u, v;
 	protected int customWidth, customHeight;
 	protected boolean drawBack = true, output = false, catalyst = false, custom = false;
@@ -103,7 +103,7 @@ public class SlotWidget extends Widget {
 	/**
 	 * Provides a shorthand for appending text to the slot's tooltip.
 	 */
-	public SlotWidget appendTooltip(Text text) {
+	public SlotWidget appendTooltip(Component text) {
 		tooltipSuppliers.add(() -> TooltipComponent.of(EmiPort.ordered(text)));
 		return this;
 	}
@@ -124,7 +124,7 @@ public class SlotWidget extends Widget {
 	 * which is set by {@link SlotWidget#large()}.
 	 * {@link SlotWidget#custom()} is an alternative for custom sizing.
 	 */
-	public SlotWidget backgroundTexture(Identifier id, int u, int v) {
+	public SlotWidget backgroundTexture(ResourceLocation id, int u, int v) {
 		this.textureId = id;
 		this.u = u;
 		this.v = v;
@@ -135,7 +135,7 @@ public class SlotWidget extends Widget {
 	 * Sets the slot to use a custom texture and custom sizing
 	 * @param id The texture identifier to use to draw the background
 	 */
-	public SlotWidget customBackground(Identifier id, int u, int v, int width, int height) {
+	public SlotWidget customBackground(ResourceLocation id, int u, int v, int width, int height) {
 		backgroundTexture(id, u, v);
 		this.custom = true;
 		this.customWidth = width;
@@ -235,7 +235,7 @@ public class SlotWidget extends Widget {
 		EmiRecipe recipe = getRecipe();
 		if (recipe != null) {
 			if (recipe.getId() != null && EmiConfig.showRecipeIds) {
-				list.add(TooltipComponent.of(EmiPort.ordered(EmiPort.literal(recipe.getId().toString(), Formatting.GRAY))));
+				list.add(TooltipComponent.of(EmiPort.ordered(EmiPort.literal(recipe.getId().toString(), ChatFormatting.GRAY))));
 			}
 			if (canResolve() && EmiConfig.helpLevel.has(HelpLevel.NORMAL)) {
 				if (EmiConfig.viewRecipes.isBound()) {

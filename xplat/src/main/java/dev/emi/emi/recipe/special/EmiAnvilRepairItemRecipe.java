@@ -13,16 +13,16 @@ import dev.emi.emi.api.render.EmiTexture;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Identifier;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.resources.ResourceLocation;
 
 public class EmiAnvilRepairItemRecipe implements EmiRecipe {
 	private final Item tool;
-	private final Identifier id;
+	private final ResourceLocation id;
 	private final int uniq = EmiUtil.RANDOM.nextInt();
 
-	public EmiAnvilRepairItemRecipe(Item tool, Identifier id) {
+	public EmiAnvilRepairItemRecipe(Item tool, ResourceLocation id) {
 		this.tool = tool;
 		this.id = id;
 	}
@@ -33,7 +33,7 @@ public class EmiAnvilRepairItemRecipe implements EmiRecipe {
 	}
 
 	@Override
-	public Identifier getId() {
+	public ResourceLocation getId() {
 		return id;
 	}
 

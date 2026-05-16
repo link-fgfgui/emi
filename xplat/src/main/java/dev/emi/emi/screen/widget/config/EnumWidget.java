@@ -11,16 +11,16 @@ import dev.emi.emi.config.ConfigEnum;
 import dev.emi.emi.screen.ConfigEnumScreen;
 import dev.emi.emi.screen.ConfigScreen;
 import dev.emi.emi.screen.ConfigScreen.Mutator;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.Component;
 
 public class EnumWidget extends ConfigEntryWidget {
 	private final Mutator<ConfigEnum> mutator;
-	private ButtonWidget button;
+	private Button button;
 
-	public EnumWidget(Text name, List<TooltipComponent> tooltip, Supplier<String> search, Mutator<ConfigEnum> mutator, Predicate<ConfigEnum> filter) {
+	public EnumWidget(Component name, List<ClientTooltipComponent> tooltip, Supplier<String> search, Mutator<ConfigEnum> mutator, Predicate<ConfigEnum> filter) {
 		super(name, tooltip, search, 20);
 		this.mutator = mutator;
 
@@ -33,7 +33,7 @@ public class EnumWidget extends ConfigEntryWidget {
 	public static void page(ConfigEnum original, Predicate<ConfigEnum> filter, Consumer<ConfigEnum> consumer) {
 		Enum<?> e = (Enum<?>) original;
 		Enum<?>[] values =  e.getClass().getEnumConstants();
-		MinecraftClient client = MinecraftClient.getInstance();
+		Minecraft client = Minecraft.getInstance();
 		if (client.currentScreen instanceof ConfigScreen cs) {
 			client.setScreen(new ConfigEnumScreen<ConfigEnum>(cs, Stream.of(values).filter(f -> filter.test((ConfigEnum) f)).map(v -> {
 				ConfigEnum en = (ConfigEnum) v;
@@ -42,7 +42,7 @@ public class EnumWidget extends ConfigEntryWidget {
 		}
 	}
 
-	public Text getText() {
+	public Component getText() {
 		return mutator.get().getText();
 	}
 

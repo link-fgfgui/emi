@@ -8,23 +8,23 @@ import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
 import dev.emi.emi.api.widget.TextWidget.Alignment;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ItemEnchantmentsComponent;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.text.OrderedText;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 
 public class EmiGrindstoneDisenchantingBookRecipe implements EmiRecipe {
-	private static final Identifier BACKGROUND = EmiPort.id("minecraft", "textures/gui/container/grindstone.png");
+	private static final ResourceLocation BACKGROUND = EmiPort.id("minecraft", "textures/gui/container/grindstone.png");
 	private final Enchantment enchantment;
 	private final int level;
-	private final Identifier id;
+	private final ResourceLocation id;
 
-	public EmiGrindstoneDisenchantingBookRecipe(Enchantment enchantment, int level, Identifier id) {
+	public EmiGrindstoneDisenchantingBookRecipe(Enchantment enchantment, int level, ResourceLocation id) {
 		this.enchantment = enchantment;
 		this.level = level;
 		this.id = id;
@@ -36,7 +36,7 @@ public class EmiGrindstoneDisenchantingBookRecipe implements EmiRecipe {
 	}
 
 	@Override
-	public Identifier getId() {
+	public ResourceLocation getId() {
 		return id;
 	}
 
@@ -77,14 +77,14 @@ public class EmiGrindstoneDisenchantingBookRecipe implements EmiRecipe {
 	private EmiStack getBook() {
 		ItemStack book = new ItemStack(Items.ENCHANTED_BOOK);
 
-		var enchBuilder = new ItemEnchantmentsComponent.Builder(ItemEnchantmentsComponent.DEFAULT);
+		var enchBuilder = new ItemEnchantments.Builder(ItemEnchantments.DEFAULT);
 		enchBuilder.add(EmiPort.getEnchantmentRegistry().getEntry(enchantment), level);
-		book.set(DataComponentTypes.STORED_ENCHANTMENTS, enchBuilder.build());
+		book.set(DataComponents.STORED_ENCHANTMENTS, enchBuilder.build());
 
 		return EmiStack.of(book);
 	}
 
-	private OrderedText getExp(){
+	private FormattedCharSequence getExp(){
 		int minPower = enchantment.getMinPower(level);
 		int minXP = (int)Math.ceil((double)minPower / 2.0);
 		int maxXP = 2 * minXP - 1;

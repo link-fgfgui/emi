@@ -13,7 +13,7 @@ import dev.emi.emi.EmiRenderHelper;
 import dev.emi.emi.EmiUtil;
 import dev.emi.emi.api.render.EmiRender;
 import dev.emi.emi.config.EmiConfig;
-import dev.emi.emi.mixin.accessor.DrawContextAccessor;
+import dev.emi.emi.mixin.accessor.GuiGraphicsAccessor;
 import dev.emi.emi.mixin.accessor.ItemRendererAccessor;
 import dev.emi.emi.platform.EmiAgnos;
 import dev.emi.emi.registry.EmiTags;
@@ -22,26 +22,26 @@ import dev.emi.emi.runtime.EmiTagKey;
 import dev.emi.emi.screen.tooltip.EmiTextTooltipWrapper;
 import dev.emi.emi.screen.tooltip.RemainderTooltipComponent;
 import dev.emi.emi.screen.tooltip.TagTooltipComponent;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.render.state.ItemGuiElementRenderState;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.client.render.DiffuseLighting;
-import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import com.mojang.blaze3d.platform.Lighting;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.render.item.KeyedItemRenderState;
 import net.minecraft.client.render.item.model.ItemModel;
 import net.minecraft.item.ItemDisplayContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.crash.CrashException;
-import net.minecraft.util.crash.CrashReport;
-import net.minecraft.util.crash.CrashReportSection;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.tags.TagKey;
+import net.minecraft.ChatFormatting;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.ReportedException;
+import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
 
 @ApiStatus.Internal
 public class TagEmiIngredient implements EmiIngredient {
-	private final Identifier id;
+	private final ResourceLocation id;
 	private List<EmiStack> stacks;
 	public final TagKey<?> key;
 	private final EmiTagKey<?> tagKey;
@@ -118,7 +118,7 @@ public class TagEmiIngredient implements EmiIngredient {
 	@Override
 	public void render(DrawContext draw, int x, int y, float delta, int flags) {
 		EmiDrawContext context = EmiDrawContext.wrap(draw);
-		MinecraftClient client = MinecraftClient.getInstance();
+		Minecraft client = Minecraft.getInstance();
 
 		if ((flags & RENDER_ICON) != 0) {
 			if (!tagKey.hasCustomModel()) {
@@ -176,14 +176,14 @@ public class TagEmiIngredient implements EmiIngredient {
 		List<TooltipComponent> list = Lists.newArrayList();
 		list.add(new EmiTextTooltipWrapper(this, EmiPort.ordered(tagKey.getTagName())));
 		if (EmiUtil.showAdvancedTooltips()) {
-			list.add(TooltipComponent.of(EmiPort.ordered(EmiPort.literal("#" + id, Formatting.DARK_GRAY))));
+			list.add(TooltipComponent.of(EmiPort.ordered(EmiPort.literal("#" + id, ChatFormatting.DARK_GRAY))));
 		}
 		if (tagKey.isOf(EmiPort.getFluidRegistry()) && amount > 1) {
 			list.add(TooltipComponent.of(EmiPort.ordered(EmiRenderHelper.getAmountText(this, amount))));
 		}
 		if (EmiConfig.appendModId) {
 			String mod = EmiUtil.getModName(id.getNamespace());
-			list.add(TooltipComponent.of(EmiPort.ordered(EmiPort.literal(mod, Formatting.BLUE, Formatting.ITALIC))));
+			list.add(TooltipComponent.of(EmiPort.ordered(EmiPort.literal(mod, ChatFormatting.BLUE, ChatFormatting.ITALIC))));
 		}
 		list.add(new TagTooltipComponent(stacks));
 		for (EmiStack stack : stacks) {

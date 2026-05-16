@@ -6,20 +6,20 @@ import java.util.function.Consumer;
 import org.joml.Matrix4f;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.systems.VertexSorter;
+import com.mojang.blaze3d.vertex.VertexSorting;
 
 import dev.emi.emi.EmiPort;
 import dev.emi.emi.config.EmiConfig;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.Framebuffer;
-import net.minecraft.client.gl.SimpleFramebuffer;
+import net.minecraft.client.Minecraft;
+import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.pipeline.TextureTarget;
 import net.minecraft.client.input.SystemKeycodes;
-import net.minecraft.client.texture.NativeImage;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.Util;
+import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.Component;
+import net.minecraft.Util;
 import org.joml.Matrix4fStack;
 
 public class EmiScreenshotRecorder {
@@ -51,7 +51,7 @@ public class EmiScreenshotRecorder {
 	}
 
 	private static void saveScreenshotInner(String path, int width, int height, Runnable renderer) {
-		MinecraftClient client = MinecraftClient.getInstance();
+		Minecraft client = Minecraft.getInstance();
 
 		int scale;
 		if (EmiConfig.recipeScreenshotScale < 1) {
@@ -60,7 +60,7 @@ public class EmiScreenshotRecorder {
 			scale = EmiConfig.recipeScreenshotScale;
 		}
 
-		Framebuffer framebuffer = new SimpleFramebuffer("TODO", width * scale, height * scale, true);
+		RenderTarget framebuffer = new SimpleFramebuffer("TODO", width * scale, height * scale, true);
 //		framebuffer.setClearColor(0f, 0f, 0f, 0f);
 //		framebuffer.clear(MinecraftClient.IS_SYSTEM_MAC);
 //
@@ -90,7 +90,7 @@ public class EmiScreenshotRecorder {
 			message -> client.execute(() -> client.inGameHud.getChatHud().addMessage(message)));
 	}
 
-	private static void saveScreenshotInner(File gameDirectory, String suggestedPath, Framebuffer framebuffer, Consumer<Text> messageReceiver) {
+	private static void saveScreenshotInner(File gameDirectory, String suggestedPath, RenderTarget framebuffer, Consumer<Component> messageReceiver) {
 		NativeImage nativeImage = takeScreenshot(framebuffer);
 
 		File screenshots = new File(gameDirectory, SCREENSHOTS_DIRNAME);
@@ -108,7 +108,7 @@ public class EmiScreenshotRecorder {
 			try {
 				nativeImage.writeTo(file);
 
-				Text text = EmiPort.literal(filename,
+				Component text = EmiPort.literal(filename,
 					Style.EMPTY.withUnderline(true).withClickEvent(new ClickEvent.OpenFile(file.getAbsolutePath())));
 				messageReceiver.accept(EmiPort.translatable("screenshot.success", text));
 			} catch (Throwable e) {
@@ -120,7 +120,7 @@ public class EmiScreenshotRecorder {
 		});
 	}
 
-	private static NativeImage takeScreenshot(Framebuffer framebuffer) {
+	private static NativeImage takeScreenshot(RenderTarget framebuffer) {
 		int i = framebuffer.textureWidth;
 		int j = framebuffer.textureHeight;
 		NativeImage nativeImage = new NativeImage(i, j, false);

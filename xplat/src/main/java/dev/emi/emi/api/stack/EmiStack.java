@@ -3,8 +3,8 @@ package dev.emi.emi.api.stack;
 import java.util.List;
 import java.util.function.Function;
 
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.ComponentType;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
@@ -12,14 +12,14 @@ import com.google.common.collect.Lists;
 import dev.emi.emi.EmiPort;
 import dev.emi.emi.registry.EmiComparisonDefaults;
 import dev.emi.emi.screen.tooltip.RemainderTooltipComponent;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.fluid.FlowableFluid;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.item.ItemConvertible;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.world.level.material.FlowingFluid;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * An abstract representation of a resource in EMI.
@@ -81,15 +81,15 @@ public abstract class EmiStack implements EmiIngredient {
 		return this;
 	}
 
-	public abstract ComponentChanges getComponentChanges();
+	public abstract DataComponentPatch getComponentChanges();
 
-	public <T> @Nullable T get(ComponentType<? extends T> type) {
+	public <T> @Nullable T get(DataComponentType<? extends T> type) {
 		var opt = getComponentChanges().get(type);
 		//noinspection OptionalAssignedToNull
 		return opt != null ? opt.orElse(null) : null;
 	}
 
-	public <T> T getOrDefault(ComponentType<? extends T> type, T fallback) {
+	public <T> T getOrDefault(DataComponentType<? extends T> type, T fallback) {
 		var componentValue = this.get(type);
 		return componentValue != null ? componentValue : fallback;
 	}
@@ -105,7 +105,7 @@ public abstract class EmiStack implements EmiIngredient {
 		return null;
 	}
 
-	public abstract Identifier getId();
+	public abstract ResourceLocation getId();
 
 	public ItemStack getItemStack() {
 		return ItemStack.EMPTY;
@@ -128,7 +128,7 @@ public abstract class EmiStack implements EmiIngredient {
 		return getKey().equals(stack.getKey()) && comparison.compare(this, stack);
 	}
 
-	public abstract List<Text> getTooltipText();
+	public abstract List<Component> getTooltipText();
 
 	public List<TooltipComponent> getTooltip() {
 		List<TooltipComponent> list = Lists.newArrayList();
@@ -138,7 +138,7 @@ public abstract class EmiStack implements EmiIngredient {
 		return list;
 	}
 
-	public abstract Text getName();
+	public abstract Component getName();
 
 	@Override
 	public boolean equals(Object obj) {
@@ -158,8 +158,8 @@ public abstract class EmiStack implements EmiIngredient {
 	@Override
 	public String toString() {
 		String s = "" + getKey();
-		ComponentChanges changes = getComponentChanges();
-		if (changes != ComponentChanges.EMPTY) {
+		DataComponentPatch changes = getComponentChanges();
+		if (changes != DataComponentPatch.EMPTY) {
 			s += changes;
 		}
 		return s + " x" + getAmount();
@@ -179,36 +179,36 @@ public abstract class EmiStack implements EmiIngredient {
 		return new ItemEmiStack(stack, amount);
 	}
 
-	public static EmiStack of(ItemConvertible item) {
+	public static EmiStack of(ItemLike item) {
 		return of(item.asItem().getDefaultStack(), 1);
 	}
 
-	public static EmiStack of(ItemConvertible item, long amount) {
+	public static EmiStack of(ItemLike item, long amount) {
 		return of(item.asItem().getDefaultStack(), amount);
 	}
 
-	public static EmiStack of(ItemConvertible item, ComponentChanges componentChanges) {
+	public static EmiStack of(ItemLike item, DataComponentPatch componentChanges) {
 		return of(item, componentChanges, 1);
 	}
 
-	public static EmiStack of(ItemConvertible item, ComponentChanges componentChanges, long amount) {
+	public static EmiStack of(ItemLike item, DataComponentPatch componentChanges, long amount) {
 		return new ItemEmiStack(item.asItem(), componentChanges, amount);
 	}
 
-	public static EmiStack of(Fluid fluid) {
+	public static EmiStack of(FlowingFluid fluid) {
 		return of(fluid, EmiPort.emptyExtraData());
 	}
 
-	public static EmiStack of(Fluid fluid, long amount) {
+	public static EmiStack of(FlowingFluid fluid, long amount) {
 		return of(fluid, EmiPort.emptyExtraData(), amount);
 	}
 
-	public static EmiStack of(Fluid fluid, ComponentChanges componentChanges) {
+	public static EmiStack of(FlowingFluid fluid, DataComponentPatch componentChanges) {
 		return of(fluid, componentChanges, 0);
 	}
 
-	public static EmiStack of(Fluid fluid, ComponentChanges componentChanges, long amount) {
-		if (fluid instanceof FlowableFluid ff && ff.getStill() != Fluids.EMPTY) {
+	public static EmiStack of(FlowingFluid fluid, DataComponentPatch componentChanges, long amount) {
+		if (fluid instanceof FlowingFluid ff && ff.getStill() != Fluids.EMPTY) {
 			fluid = ff.getStill();
 		}
 		if (fluid == Fluids.EMPTY) {

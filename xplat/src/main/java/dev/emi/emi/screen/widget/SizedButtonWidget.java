@@ -9,16 +9,16 @@ import dev.emi.emi.EmiPort;
 import dev.emi.emi.EmiRenderHelper;
 import dev.emi.emi.runtime.EmiDrawContext;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.resources.ResourceLocation;
 
-public class SizedButtonWidget extends ButtonWidget {
+public class SizedButtonWidget extends Button {
 	private final BooleanSupplier isActive;
 	private final IntSupplier vOffset;
-	protected Identifier texture = EmiRenderHelper.BUTTONS;
+	protected ResourceLocation texture = EmiRenderHelper.BUTTONS;
 	protected Supplier<List<net.minecraft.text.Text>> text;
 	protected int u, v;
 
@@ -69,8 +69,8 @@ public class SizedButtonWidget extends ButtonWidget {
 		if (this.isMouseOver(mouseX, mouseY) && text != null && this.active) {
 			context.push();
 			context.disableDepthTest();
-			MinecraftClient client = MinecraftClient.getInstance();
-			EmiRenderHelper.drawTooltip(client.currentScreen, context, text.get().stream().map(EmiPort::ordered).map(TooltipComponent::of).toList(), mouseX, mouseY);
+			Minecraft client = Minecraft.getInstance();
+			EmiRenderHelper.drawTooltip(client.currentScreen, context, text.get().stream().map(EmiPort::ordered).map(ClientTooltipComponent::of).toList(), mouseX, mouseY);
 			context.pop();
 		}
     }

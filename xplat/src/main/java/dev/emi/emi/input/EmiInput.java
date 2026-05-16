@@ -2,7 +2,7 @@ package dev.emi.emi.input;
 
 import org.lwjgl.glfw.GLFW;
 
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.input.SystemKeycodes;
 
 public class EmiInput {
@@ -11,15 +11,15 @@ public class EmiInput {
 	public static final int SHIFT_MASK = 4;
 
 	public static boolean isControlDown() {
-		return MinecraftClient.getInstance().isCtrlPressed();
+		return Minecraft.getInstance().isCtrlPressed();
 	}
 
 	public static boolean isAltDown() {
-		return MinecraftClient.getInstance().isAltPressed();
+		return Minecraft.getInstance().isAltPressed();
 	}
 
 	public static boolean isShiftDown() {
-		return MinecraftClient.getInstance().isShiftPressed();
+		return Minecraft.getInstance().isShiftPressed();
 	}
 
 	public static int maskFromCode(int keyCode) {

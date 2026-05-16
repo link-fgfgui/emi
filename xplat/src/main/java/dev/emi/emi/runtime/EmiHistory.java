@@ -6,9 +6,9 @@ import java.util.function.Predicate;
 import com.google.common.collect.Lists;
 
 import dev.emi.emi.api.EmiApi;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 
 public class EmiHistory {
 	private static final List<Screen> HISTORIES = Lists.newArrayList();
@@ -28,13 +28,13 @@ public class EmiHistory {
 	}
 
 	public static void pop() {
-		MinecraftClient client = MinecraftClient.getInstance();
-		if (client.currentScreen instanceof HandledScreen) {
+		Minecraft client = Minecraft.getInstance();
+		if (client.currentScreen instanceof AbstractContainerScreen) {
 			clear();
 			return;
 		}
 		int i = HISTORIES.size() - 1;
-		HandledScreen<?> screen = EmiApi.getHandledScreen();
+		AbstractContainerScreen<?> screen = EmiApi.getHandledScreen();
 		if (i >= 0) {
 			Screen popped = HISTORIES.remove(i);
 			FORWARD_HISTORIES.add(client.currentScreen);
@@ -45,7 +45,7 @@ public class EmiHistory {
 	}
 
 	public static void popUntil(Predicate<Screen> predicate, Screen otherwise) {
-		MinecraftClient client = MinecraftClient.getInstance();
+		Minecraft client = Minecraft.getInstance();
 		while (!EmiHistory.isEmpty()) {
 			EmiHistory.pop();
 			if (predicate.test(client.currentScreen)) {
@@ -56,7 +56,7 @@ public class EmiHistory {
 	}
 
 	public static void forward() {
-		MinecraftClient client = MinecraftClient.getInstance();
+		Minecraft client = Minecraft.getInstance();
 		int i = FORWARD_HISTORIES.size() - 1;
 		if (i >= 0 && client.currentScreen != null) {
 			Screen popped = FORWARD_HISTORIES.remove(i);

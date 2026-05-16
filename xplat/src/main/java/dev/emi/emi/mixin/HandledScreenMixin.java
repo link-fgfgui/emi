@@ -1,3 +1,4 @@
+// TODO(Ravel): Failed to fully resolve file: null cannot be cast to non-null type com.intellij.psi.PsiClass
 package dev.emi.emi.mixin;
 
 import org.spongepowered.asm.mixin.Dynamic;
@@ -12,20 +13,21 @@ import dev.emi.emi.EmiPort;
 import dev.emi.emi.platform.EmiAgnos;
 import dev.emi.emi.runtime.EmiDrawContext;
 import dev.emi.emi.screen.EmiScreenManager;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 
-@Mixin(HandledScreen.class)
-public abstract class HandledScreenMixin extends Screen {
+@Mixin(AbstractContainerScreen.class)
+public abstract class AbstractContainerScreenMixin extends Screen {
 	@Shadow
-	protected int backgroundWidth, backgroundHeight, x, y;
+	protected int imageWidth, backgroundHeight, x, y;
 
-	private HandledScreenMixin() { super(null); }
+	private AbstractContainerScreenMixin() { super(null); }
 
-	@Dynamic
+	// TODO(Ravel): target method renderBackground with the signature not found
+    @Dynamic
 	@Inject(at = @At(value = "INVOKE",
-			target = "net/minecraft/client/gui/screen/ingame/HandledScreen.drawBackground(Lnet/minecraft/client/gui/DrawContext;FII)V",
+			target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderBg(Lnet/minecraft/client/gui/GuiGraphics;FII)V",
 			shift = Shift.AFTER),
 		method = "renderBackground(Lnet/minecraft/client/gui/DrawContext;IIF)V")
 	private void renderBackground(DrawContext raw, int mouseX, int mouseY, float delta, CallbackInfo info) {
@@ -34,7 +36,7 @@ public abstract class HandledScreenMixin extends Screen {
 	}
 
 	@Inject(at = @At(value = "INVOKE",
-			target = "Lnet/minecraft/client/gui/screen/ingame/HandledScreen;drawForeground(Lnet/minecraft/client/gui/DrawContext;II)V",
+			target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderLabels(Lnet/minecraft/client/gui/GuiGraphics;II)V",
 			shift = Shift.AFTER),
 		method = "renderMain")
 	private void renderForeground(DrawContext raw, int mouseX, int mouseY, float delta, CallbackInfo info) {

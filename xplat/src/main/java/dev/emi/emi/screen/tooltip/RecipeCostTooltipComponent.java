@@ -14,12 +14,12 @@ import dev.emi.emi.bom.FlatMaterialCost;
 import dev.emi.emi.bom.MaterialTree;
 import dev.emi.emi.registry.EmiStackList;
 import dev.emi.emi.runtime.EmiDrawContext;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.client.gui.Font;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 
 public class RecipeCostTooltipComponent implements EmiTooltipComponent {
-	private static final Text COST = EmiPort.translatable("emi.cost_per");
+	private static final Component COST = EmiPort.translatable("emi.cost_per");
 	private final List<Node> nodes = Lists.newArrayList();
 	public final MaterialTree tree;
 	private int maxWidth = 0;
@@ -78,7 +78,7 @@ public class RecipeCostTooltipComponent implements EmiTooltipComponent {
 	}
 
 	@Override
-	public int getHeight(TextRenderer textRenderer) {
+	public int getHeight(Font textRenderer) {
 		if (!nodes.isEmpty()) {
 			return nodes.get(nodes.size() - 1).y + 18;
 		}
@@ -86,7 +86,7 @@ public class RecipeCostTooltipComponent implements EmiTooltipComponent {
 	}
 
 	@Override
-	public int getWidth(TextRenderer textRenderer) {
+	public int getWidth(Font textRenderer) {
 		return Math.max(textRenderer.getWidth(COST), maxWidth);
 	}
 
@@ -100,18 +100,18 @@ public class RecipeCostTooltipComponent implements EmiTooltipComponent {
 
 	@Override
 	public void drawTooltipText(TextRenderData text) {
-		text.draw(COST, 0, 0, Formatting.GRAY.getColorValue(), true);
+		text.draw(COST, 0, 0, ChatFormatting.GRAY.getColorValue(), true);
 	}
 
 	private static class Node {
 		public final EmiIngredient stack;
-		public final Text text;
+		public final Component text;
 		public int x, y;
 
 		public Node(EmiIngredient stack, double amount, boolean chanced) {
 			this.stack = stack;
 			if (chanced) {
-				text = EmiPort.append(EmiPort.literal("≈"), EmiRenderHelper.getAmountText(stack, amount)).formatted(Formatting.GOLD);
+				text = EmiPort.append(EmiPort.literal("≈"), EmiRenderHelper.getAmountText(stack, amount)).formatted(ChatFormatting.GOLD);
 			} else {
 				text = EmiRenderHelper.getAmountText(stack, amount);
 			}

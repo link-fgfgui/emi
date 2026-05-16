@@ -4,7 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import dev.emi.emi.api.stack.EmiStack;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 public class RegexTooltipQuery extends Query {
 	private final Pattern pattern;
@@ -23,7 +23,7 @@ public class RegexTooltipQuery extends Query {
 		if (pattern == null) {
 			return false;
 		}
-		for (Text text : TooltipQuery.getText(stack)) {
+		for (Component text : TooltipQuery.getText(stack)) {
 			Matcher m = pattern.matcher(text.getString());
 			if (m.find()) {
 				return true;

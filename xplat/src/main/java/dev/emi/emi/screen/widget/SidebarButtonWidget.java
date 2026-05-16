@@ -13,7 +13,7 @@ import dev.emi.emi.input.EmiInput;
 import dev.emi.emi.screen.EmiScreenManager.SidebarPanel;
 
 import net.minecraft.client.input.AbstractInput;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
 
 public class SidebarButtonWidget extends SizedButtonWidget {
 	private final SidebarPanel panel;
@@ -26,10 +26,10 @@ public class SidebarButtonWidget extends SizedButtonWidget {
 			list.add(panel.getType().getText());
 			list.add(panel.getType().getDescription());
 			if (panel.getType() == SidebarType.FAVORITES && EmiConfig.favorite.isBound()) {
-				list.add(EmiPort.translatable("emi.sidebar.favorite_stack", EmiConfig.favorite.getBindText()).formatted(Formatting.GRAY));
+				list.add(EmiPort.translatable("emi.sidebar.favorite_stack", EmiConfig.favorite.getBindText()).formatted(ChatFormatting.GRAY));
 			}
 			if (panel.pages.pages.size() > 1) {
-				list.add(EmiPort.translatable("emi.sidebar.cycle", EmiBind.LEFT_CLICK.getBindText()).formatted(Formatting.GRAY));
+				list.add(EmiPort.translatable("emi.sidebar.cycle", EmiBind.LEFT_CLICK.getBindText()).formatted(ChatFormatting.GRAY));
 			}
 			return list;
 		});

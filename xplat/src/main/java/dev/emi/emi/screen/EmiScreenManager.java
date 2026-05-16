@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 
 import net.minecraft.client.gui.Click;
 import net.minecraft.client.input.KeyInput;
-import net.minecraft.command.argument.ItemStackArgument;
+import net.minecraft.commands.arguments.item.ItemInput;
 
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4fStack;
@@ -49,7 +49,7 @@ import dev.emi.emi.config.SidebarTheme;
 import dev.emi.emi.config.SidebarType;
 import dev.emi.emi.input.EmiBind;
 import dev.emi.emi.input.EmiInput;
-import dev.emi.emi.mixin.accessor.HandledScreenAccessor;
+import dev.emi.emi.mixin.accessor.AbstractContainerScreenAccessor;
 import dev.emi.emi.network.CreateItemC2SPacket;
 import dev.emi.emi.network.EmiNetwork;
 import dev.emi.emi.platform.EmiClient;
@@ -74,28 +74,28 @@ import dev.emi.emi.screen.widget.SidebarButtonWidget;
 import dev.emi.emi.screen.widget.SizedButtonWidget;
 import dev.emi.emi.search.EmiSearch;
 import dev.emi.emi.search.EmiSearch.CompiledQuery;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.ParentElement;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ingame.CreativeInventoryScreen;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.components.events.ContainerEventHandler;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
+import net.minecraft.util.Mth;
 
 public class EmiScreenManager {
 	private static final int PADDING_SIZE = 1;
 	private static final int ENTRY_SIZE = 16 + PADDING_SIZE * 2;
 	private static final int SUBPANEL_SEPARATOR_SIZE = 3;
-	private static MinecraftClient client = MinecraftClient.getInstance();
+	private static Minecraft client = Minecraft.getInstance();
 	private static List<? extends EmiIngredient> searchedStacks = List.of();
 	private static int lastWidth, lastHeight;
 	private static List<Bounds> lastExclusion;
@@ -278,7 +278,7 @@ public class EmiScreenManager {
 	}
 
 	private static void createScreenSpace(SidebarPanel panel, Screen screen, List<Bounds> exclusion,
-			boolean rtl, Bounds bounds, SidebarSettings settings) {
+                                          boolean rtl, Bounds bounds, SidebarSettings settings) {
 		Margins margins = settings.margins();
 		ScreenAlign align = settings.align();
 		SidebarTheme theme = settings.theme();
@@ -342,14 +342,14 @@ public class EmiScreenManager {
 		int hr = xMax - tw * ENTRY_SIZE;
 		int tx = switch (align.horizontal) {
 			case LEFT -> hl;
-			case CENTER -> MathHelper.clamp(cx - (tw * ENTRY_SIZE) / 2, hl, hr);
+			case CENTER -> Mth.clamp(cx - (tw * ENTRY_SIZE) / 2, hl, hr);
 			case RIGHT -> hr;
 		};
 		int vt = yMin + headerOffset;
 		int vb = yMax - th * ENTRY_SIZE - subpanelHeight;
 		int ty = switch (align.vertical) {
 			case TOP -> vt;
-			case CENTER -> MathHelper.clamp(cy - (th * ENTRY_SIZE - headerOffset + subpanelHeight + theme.verticalPadding / 2) / 2, vt, vb);
+			case CENTER -> Mth.clamp(cy - (th * ENTRY_SIZE - headerOffset + subpanelHeight + theme.verticalPadding / 2) / 2, vt, vb);
 			case BOTTOM -> vb;
 		};
 		panel.header = header;
@@ -748,7 +748,7 @@ public class EmiScreenManager {
 	private static void renderCurrentTooltip(EmiDrawContext context, int mouseX, int mouseY, float delta, EmiScreenBase base) {
 		try {
 			ItemStack cursor = ItemStack.EMPTY;
-			if (client.currentScreen instanceof HandledScreen<?> handled) {
+			if (client.currentScreen instanceof AbstractContainerScreen<?> handled) {
 				cursor = handled.getScreenHandler().getCursorStack();
 			}
 			ScreenSpace space = getHoveredSpace(mouseX, mouseY);
@@ -797,8 +797,8 @@ public class EmiScreenManager {
 			try {
 				EmiLog.error("Error rendering tooltip", e);
 				List<TooltipComponent> list = List.of(
-					EmiTooltipComponents.of(EmiPort.literal("Error rendering tooltip", Formatting.RED)),
-					EmiTooltipComponents.of(EmiPort.literal("See log", Formatting.GRAY))
+					EmiTooltipComponents.of(EmiPort.literal("Error rendering tooltip", ChatFormatting.RED)),
+					EmiTooltipComponents.of(EmiPort.literal("See log", ChatFormatting.GRAY))
 				);
 				EmiRenderHelper.drawTooltip(base.screen(), context, list, mouseX, mouseY);
 			} catch (Exception e2) {
@@ -813,7 +813,7 @@ public class EmiScreenManager {
 			Screen screen = base.screen();
 			EmiProfiler.swap("dev");
 			int color = 0xFFFFFFFF;
-			Text title = EmiPort.literal("EMI Dev Mode");
+			Component title = EmiPort.literal("EMI Dev Mode");
 			int off = -16;
 			int devTextX = getDebugTextX();
 			if (!EmiReloadLog.warnings.isEmpty()) {
@@ -872,7 +872,7 @@ public class EmiScreenManager {
 			}
 			
 			try {
-				HandledScreen<?> hs = EmiApi.getHandledScreen();
+				AbstractContainerScreen<?> hs = EmiApi.getHandledScreen();
 				for (EmiRecipeHandler handler : EmiRecipeFiller.getAllHandlers(hs)) {
 					if (handler instanceof StandardRecipeHandler standard) {
 						ignoredSlots.addAll(standard.getInputSources(hs.getScreenHandler()));
@@ -883,9 +883,9 @@ public class EmiScreenManager {
 				EmiLog.error("Recipe handler is throwing in renderSlotOverlays:", t);
 			}
 		}
-		if (base.screen() instanceof HandledScreen<?> hs && hs instanceof HandledScreenAccessor hsa) {
+		if (base.screen() instanceof AbstractContainerScreen<?> hs && hs instanceof AbstractContainerScreenAccessor hsa) {
 			context.push();
-			context.matrices().translate(hsa.getX(), hsa.getY()/*, 0*/);
+			context.matrices().translate(hsa.getLeftPos(), hsa.getTopPos()/*, 0*/);
 			for (Slot slot : hs.getScreenHandler().slots) {
 				if (!slot.isEnabled()) {
 					continue;
@@ -1097,7 +1097,7 @@ public class EmiScreenManager {
 			return false;
 		}
 		if (draggedStack.isEmpty() && click.button() == 0) {
-			if (client.currentScreen instanceof HandledScreen<?> handled) {
+			if (client.currentScreen instanceof AbstractContainerScreen<?> handled) {
 				if (!handled.getScreenHandler().getCursorStack().isEmpty()) {
 					return false;
 				}
@@ -1153,14 +1153,14 @@ public class EmiScreenManager {
 		return false;
 	}
 
-	private static boolean hasFocusedTextField(ParentElement parent, int depthBail) {
+	private static boolean hasFocusedTextField(ContainerEventHandler parent, int depthBail) {
 		if (depthBail <= 0) {
 			return false;
 		}
-		for (Element e : parent.children()) {
-			if (e instanceof TextFieldWidget tfw && tfw.isActive() && tfw.visible) {
+		for (GuiEventListener e : parent.children()) {
+			if (e instanceof EditBox tfw && tfw.isActive() && tfw.visible) {
 				return true;
-			} else if (e instanceof ParentElement p) {
+			} else if (e instanceof ContainerEventHandler p) {
 				return hasFocusedTextField(p, depthBail - 1);
 			}
 		}
@@ -1316,8 +1316,8 @@ public class EmiScreenManager {
 					amount = Math.min(amount, batches);
 				}
 				if (EmiRecipeFiller.performFill(context, EmiApi.getHandledScreen(), EmiCraftContext.Type.CRAFTABLE, destination, amount)) {
-					MinecraftClient.getInstance().getSoundManager()
-							.play(PositionedSoundInstance.ui(SoundEvents.UI_BUTTON_CLICK, 1.0f));
+					Minecraft.getInstance().getSoundManager()
+							.play(SimpleSoundInstance.ui(SoundEvents.UI_BUTTON_CLICK, 1.0f));
 					return true;
 				}
 			}
@@ -1334,7 +1334,7 @@ public class EmiScreenManager {
 			repopulatePanels(SidebarType.FAVORITES);
 			return true;
 		} else if (function.apply(EmiConfig.copyId)) {
-			MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.ui(SoundEvents.UI_BUTTON_CLICK, 1.0f));
+			Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.ui(SoundEvents.UI_BUTTON_CLICK, 1.0f));
 			client.keyboard.setClipboard("" + recipe.getId());
 			return true;
 		}
@@ -1358,7 +1358,7 @@ public class EmiScreenManager {
 		}
 		ItemStack is = stack.getItemStack().copy();
 		is.setCount(amount);
-		if (mode == 1 && client.player.getAbilities().creativeMode && client.currentScreen instanceof CreativeInventoryScreen) {
+		if (mode == 1 && client.player.getAbilities().creativeMode && client.currentScreen instanceof CreativeModeInventoryScreen) {
 			client.player.currentScreenHandler.setCursorStack(is);
 			return true;
 		}
@@ -1367,7 +1367,7 @@ public class EmiScreenManager {
 			return true;
 		} else {
 			if (!is.isEmpty()) {
-				ItemStackArgument argument = new ItemStackArgument(is.getRegistryEntry(), is.getComponentChanges());
+				ItemInput argument = new ItemStackArgument(is.getRegistryEntry(), is.getComponentChanges());
 				String command = "give @s " + argument.asString(client.world.getRegistryManager());
 				command += " " + amount;
 				if (command.length() < 256) {
@@ -1380,7 +1380,7 @@ public class EmiScreenManager {
 	}
 	
 	private static boolean deleteCursor(int mx, int my) {
-		if (client.currentScreen instanceof HandledScreen<?> handled) {
+		if (client.currentScreen instanceof AbstractContainerScreen<?> handled) {
 			ItemStack cursor = handled.getScreenHandler().getCursorStack();
 			ScreenSpace space = getHoveredSpace(mx, my);
 			if (!cursor.isEmpty() && space != null && space.getType() == SidebarType.INDEX) {
@@ -1593,7 +1593,7 @@ public class EmiScreenManager {
 
 		private void drawHeader(EmiDrawContext context, int mouseX, int mouseY, float delta, int page, int totalPages) {
 			if (header) {
-				Text text = EmiRenderHelper.getPageText(page + 1, totalPages, (space.tw - 3) * ENTRY_SIZE);
+				Component text = EmiRenderHelper.getPageText(page + 1, totalPages, (space.tw - 3) * ENTRY_SIZE);
 				int x = space.tx + (space.tw * ENTRY_SIZE) / 2;
 				int maxLeft = (space.tw - 2) * ENTRY_SIZE / 2 - ENTRY_SIZE;
 				int w = client.textRenderer.getWidth(text) / 2;

@@ -1,6 +1,6 @@
 package dev.emi.emi.stack.serializer;
 
-import net.minecraft.util.JsonHelper;
+import net.minecraft.util.GsonHelper;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -27,9 +27,9 @@ public class ListEmiIngredientSerializer implements EmiIngredientSerializer<List
         float chance;
         if (element.isJsonObject()) {
             JsonObject json = element.getAsJsonObject();
-            amount = JsonHelper.getLong(json, "amount", 1);
-            chance = JsonHelper.getFloat(json, "chance", 1);
-            ingredientsArray = JsonHelper.getArray(json, "ingredients");
+            amount = GsonHelper.getLong(json, "amount", 1);
+            chance = GsonHelper.getFloat(json, "chance", 1);
+            ingredientsArray = GsonHelper.getArray(json, "ingredients");
         } else if (element.isJsonArray()) {
             ingredientsArray = element.getAsJsonArray();
             amount = 1;

@@ -4,7 +4,7 @@ import java.util.Comparator;
 
 import dev.emi.emi.registry.EmiRecipeSorter;
 import it.unimi.dsi.fastutil.ints.IntList;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public class EmiRecipeSorting {
 	private static final Comparator<EmiRecipe> NONE = (a, b) -> 0;
@@ -15,8 +15,8 @@ public class EmiRecipeSorting {
 
 	public static Comparator<EmiRecipe> identifier() {
 		return (ar, br) -> {
-			Identifier a = ar.getId(); 
-			Identifier b = br.getId(); 
+			ResourceLocation a = ar.getId();
+			ResourceLocation b = br.getId();
 			if (a == null) {
 				if (b == null) {
 					return 0;

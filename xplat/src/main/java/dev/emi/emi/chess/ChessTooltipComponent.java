@@ -3,26 +3,26 @@ package dev.emi.emi.chess;
 import dev.emi.emi.EmiRenderHelper;
 import dev.emi.emi.runtime.EmiDrawContext;
 import dev.emi.emi.screen.tooltip.EmiTooltipComponent;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.Font;
+import net.minecraft.network.chat.Component;
 
 class ChessTooltipComponent implements EmiTooltipComponent {
 	private final ChessPiece dragged, hovered;
-	private final Text description;
+	private final Component description;
 	
-	public ChessTooltipComponent(ChessPiece dragged, ChessPiece hovered, Text description) {
+	public ChessTooltipComponent(ChessPiece dragged, ChessPiece hovered, Component description) {
 		this.dragged = dragged;
 		this.hovered = hovered;
 		this.description = description;
 	}
 
     @Override
-    public int getHeight(TextRenderer textRenderer) {
+    public int getHeight(Font textRenderer) {
         return 30;
     }
 
     @Override
-	public int getWidth(TextRenderer textRenderer) {
+	public int getWidth(Font textRenderer) {
 		return Math.max(textRenderer.getWidth(description), 48);
 	}
 

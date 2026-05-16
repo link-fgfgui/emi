@@ -2,7 +2,7 @@ package dev.emi.emi.api.widget;
 
 import dev.emi.emi.EmiRenderHelper;
 import dev.emi.emi.runtime.EmiDrawContext;
-import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.GuiGraphics;
 
 public class FillingArrowWidget extends AnimatedTextureWidget {
 

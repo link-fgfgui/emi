@@ -11,12 +11,12 @@ import dev.emi.emi.api.recipe.EmiCraftingRecipe;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.runtime.EmiLog;
-import net.minecraft.inventory.CraftingInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.CraftingRecipe;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.ShapedRecipe;
-import net.minecraft.recipe.input.CraftingRecipeInput;
+import net.minecraft.world.inventory.TransientCraftingContainer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.item.crafting.CraftingInput;
 
 public class EmiShapedRecipe extends EmiCraftingRecipe {
 
@@ -27,7 +27,7 @@ public class EmiShapedRecipe extends EmiCraftingRecipe {
 
 	public static void setRemainders(List<EmiIngredient> input, CraftingRecipe recipe) {
 		try {
-			CraftingInventory inv = EmiUtil.getCraftingInventory();
+			TransientCraftingContainer inv = EmiUtil.getCraftingInventory();
 			for (int i = 0; i < input.size(); i++) {
 				if (input.get(i).isEmpty()) {
 					continue;
@@ -43,7 +43,7 @@ public class EmiShapedRecipe extends EmiCraftingRecipe {
 				List<EmiStack> stacks = input.get(i).getEmiStacks();
 				for (EmiStack stack : stacks) {
 					inv.setStack(i, stack.getItemStack().copy());
-					CraftingRecipeInput cri = CraftingRecipeInput.create(inv.getWidth(), inv.getHeight(), inv.getHeldStacks());
+					CraftingInput cri = CraftingInput.create(inv.getWidth(), inv.getHeight(), inv.getHeldStacks());
 					if (cri.getWidth() <= 3 && cri.getHeight() <= 3) {
 						ItemStack remainder = recipe.getRecipeRemainders(cri).get((i / 3 * cri.getWidth()) + (i % 3));
 						if (!remainder.isEmpty()) {

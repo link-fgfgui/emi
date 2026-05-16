@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import dev.emi.emi.EmiPort;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 public class IntGroup {
 	public final String baseTranslation;
@@ -22,7 +22,7 @@ public class IntGroup {
 		this.values.addAll(values);
 	}
 
-	public Text getValueTranslation(int i) {
+	public Component getValueTranslation(int i) {
 		return EmiPort.translatable(baseTranslation + names.get(i));
 	}
 

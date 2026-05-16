@@ -19,14 +19,14 @@ import dev.emi.emi.api.widget.Widget;
 import dev.emi.emi.platform.EmiClient;
 import dev.emi.emi.registry.EmiRecipeFiller;
 import dev.emi.emi.runtime.EmiDrawContext;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.Slot;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
 
-public interface StandardRecipeHandler<T extends ScreenHandler> extends EmiRecipeHandler<T> {
+public interface StandardRecipeHandler<T extends AbstractContainerMenu> extends EmiRecipeHandler<T> {
 	
 	/**
 	 * @return The slots for the recipe handler to source ingredients from.
@@ -55,7 +55,7 @@ public interface StandardRecipeHandler<T extends ScreenHandler> extends EmiRecip
 	}
 
 	@Override
-	default EmiPlayerInventory getInventory(HandledScreen<T> screen) {
+	default EmiPlayerInventory getInventory(AbstractContainerScreen<T> screen) {
 		return new EmiPlayerInventory(getInputSources(screen.getScreenHandler()).stream().map(Slot::getStack).map(EmiStack::of).toList());
 	}
 
@@ -69,7 +69,7 @@ public interface StandardRecipeHandler<T extends ScreenHandler> extends EmiRecip
 		List<ItemStack> stacks = EmiRecipeFiller.getStacks(this, recipe, context.getScreen(), context.getAmount());
 		if (stacks != null) {
 			if (stacks != null) {
-				MinecraftClient.getInstance().setScreen(context.getScreen());
+				Minecraft.getInstance().setScreen(context.getScreen());
 				if (!EmiClient.onServer) {
 					return EmiRecipeFiller.clientFill(this, recipe, context.getScreen(), stacks, context.getDestination());
 				} else {

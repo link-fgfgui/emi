@@ -12,7 +12,7 @@ import dev.emi.emi.api.widget.Bounds;
 import dev.emi.emi.runtime.EmiLog;
 import dev.emi.emi.screen.EmiScreenBase;
 import dev.emi.emi.screen.EmiScreenManager;
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screens.Screen;
 
 public class EmiExclusionAreas {
 	public static Map<Class<?>, List<EmiExclusionArea<?>>> fromClass = Maps.newHashMap();

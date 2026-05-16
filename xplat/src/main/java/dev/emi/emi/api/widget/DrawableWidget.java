@@ -4,14 +4,14 @@ import java.util.List;
 import java.util.function.BiFunction;
 
 import dev.emi.emi.runtime.EmiDrawContext;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 
 public class DrawableWidget extends Widget implements WidgetTooltipHolder<DrawableWidget> {
 	protected final DrawableWidgetConsumer consumer;
 	protected final Bounds bounds;
 	protected final int x, y;
-	protected BiFunction<Integer, Integer, List<TooltipComponent>> tooltipSupplier = (mouseX, mouseY) -> List.of();
+	protected BiFunction<Integer, Integer, List<ClientTooltipComponent>> tooltipSupplier = (mouseX, mouseY) -> List.of();
 
 	public DrawableWidget(int x, int y, int w, int h, DrawableWidgetConsumer consumer) {
 		this.x = x;
@@ -21,7 +21,7 @@ public class DrawableWidget extends Widget implements WidgetTooltipHolder<Drawab
 	}
 
 	@Override
-	public DrawableWidget tooltip(BiFunction<Integer, Integer, List<TooltipComponent>> tooltipSupplier) {
+	public DrawableWidget tooltip(BiFunction<Integer, Integer, List<ClientTooltipComponent>> tooltipSupplier) {
 		this.tooltipSupplier = tooltipSupplier;
 		return this;
 	}
@@ -32,7 +32,7 @@ public class DrawableWidget extends Widget implements WidgetTooltipHolder<Drawab
 	}
 
 	@Override
-	public List<TooltipComponent> getTooltip(int mouseX, int mouseY) {
+	public List<ClientTooltipComponent> getTooltip(int mouseX, int mouseY) {
 		return tooltipSupplier.apply(mouseX, mouseY);
 	}
 

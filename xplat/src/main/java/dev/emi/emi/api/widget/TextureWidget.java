@@ -4,21 +4,21 @@ import java.util.List;
 import java.util.function.BiFunction;
 
 import dev.emi.emi.runtime.EmiDrawContext;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.resources.ResourceLocation;
 
 public class TextureWidget extends Widget implements WidgetTooltipHolder<TextureWidget> {
-	protected final Identifier texture;
+	protected final ResourceLocation texture;
 	protected final int x, y;
 	protected final int width, height;
 	protected final int u, v;
 	protected final int regionWidth, regionHeight;
 	protected final int textureWidth, textureHeight;
-	private BiFunction<Integer, Integer, List<TooltipComponent>> tooltipSupplier = (mouseX, mouseY) -> List.of();
+	private BiFunction<Integer, Integer, List<ClientTooltipComponent>> tooltipSupplier = (mouseX, mouseY) -> List.of();
 
-	public TextureWidget(Identifier texture, int x, int y, int width, int height, int u, int v,
-			int regionWidth, int regionHeight, int textureWidth, int textureHeight) {
+	public TextureWidget(ResourceLocation texture, int x, int y, int width, int height, int u, int v,
+                         int regionWidth, int regionHeight, int textureWidth, int textureHeight) {
 		this.texture = texture;
 		this.x = x;
 		this.y = y;
@@ -32,12 +32,12 @@ public class TextureWidget extends Widget implements WidgetTooltipHolder<Texture
 		this.textureHeight = textureHeight;
 	}
 
-	public TextureWidget(Identifier texture, int x, int y, int width, int height, int u, int v) {
+	public TextureWidget(ResourceLocation texture, int x, int y, int width, int height, int u, int v) {
 		this(texture, x, y, width, height, u, v, width, height, 256, 256);
 	}
 
 	@Override
-	public TextureWidget tooltip(BiFunction<Integer, Integer, List<TooltipComponent>> tooltipSupplier) {
+	public TextureWidget tooltip(BiFunction<Integer, Integer, List<ClientTooltipComponent>> tooltipSupplier) {
 		this.tooltipSupplier = tooltipSupplier;
 		return this;
 	}
@@ -48,7 +48,7 @@ public class TextureWidget extends Widget implements WidgetTooltipHolder<Texture
 	}
 
 	@Override
-	public List<TooltipComponent> getTooltip(int mouseX, int mouseY) {
+	public List<ClientTooltipComponent> getTooltip(int mouseX, int mouseY) {
 		return tooltipSupplier.apply(mouseX, mouseY);
 	}
 

@@ -13,20 +13,20 @@ import dev.emi.emi.EmiPort;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.runtime.EmiLog;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.component.ComponentChanges;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.StringNbtReader;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
+import net.minecraft.nbt.TagParser;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.GsonHelper;
 
 public interface EmiStackSerializer<T extends EmiStack> extends EmiIngredientSerializer<T> {
 	static final Pattern STACK_REGEX = Pattern.compile("^([\\w_\\-./]+):([\\w_\\-.]+):([\\w_\\-./]+)(\\{.*\\})?$");
 	
-	EmiStack create(Identifier id, ComponentChanges componentChanges, long amount);
+	EmiStack create(ResourceLocation id, DataComponentPatch componentChanges, long amount);
 
 	private static <T> DynamicOps<T> withRegistryAccess(DynamicOps<T> ops) {
-		MinecraftClient instance = MinecraftClient.getInstance();
+		Minecraft instance = Minecraft.getInstance();
 		if (instance == null || instance.world == null) {
 			//Note: instance can be null in datagen, just fall back to a variant that doesn't have registry access
 			// as in the majority of cases this will work fine
@@ -37,13 +37,13 @@ public interface EmiStackSerializer<T extends EmiStack> extends EmiIngredientSer
 
 	@Override
 	default EmiIngredient deserialize(JsonElement element) {
-		Identifier id = null;
+		ResourceLocation id = null;
 		String nbt = null;
 		JsonObject changesJson = null;
 		long amount = 1;
 		float chance = 1;
 		EmiStack remainder = EmiStack.EMPTY;
-		if (JsonHelper.isString(element)) {
+		if (GsonHelper.isString(element)) {
 			String s = element.getAsString();
 			Matcher m = STACK_REGEX.matcher(s);
 			if (m.matches()) {
@@ -52,12 +52,12 @@ public interface EmiStackSerializer<T extends EmiStack> extends EmiIngredientSer
 			}
 		} else if (element.isJsonObject()) {
 			JsonObject json = element.getAsJsonObject();
-			id = EmiPort.id(JsonHelper.getString(json, "id"));
-			nbt = JsonHelper.getString(json, "nbt", null);
-			changesJson = JsonHelper.getObject(json, "componentChanges", null);
-			amount = JsonHelper.getLong(json, "amount", 1);
-			chance = JsonHelper.getFloat(json, "chance", 1);
-			if (JsonHelper.hasElement(json, "remainder")) {
+			id = EmiPort.id(GsonHelper.getString(json, "id"));
+			nbt = GsonHelper.getString(json, "nbt", null);
+			changesJson = GsonHelper.getObject(json, "componentChanges", null);
+			amount = GsonHelper.getLong(json, "amount", 1);
+			chance = GsonHelper.getFloat(json, "chance", 1);
+			if (GsonHelper.hasElement(json, "remainder")) {
 				EmiIngredient ing = EmiIngredientSerializer.getDeserialized(json.get("remainder"));
 				if (ing instanceof EmiStack stack) {
 					remainder = stack;
@@ -66,11 +66,11 @@ public interface EmiStackSerializer<T extends EmiStack> extends EmiIngredientSer
 		}
 		if (id != null) {
 			try {
-				ComponentChanges changes = ComponentChanges.EMPTY;
+				DataComponentPatch changes = DataComponentPatch.EMPTY;
 				if (changesJson != null) {
-					changes = ComponentChanges.CODEC.decode(withRegistryAccess(JsonOps.INSTANCE), changesJson).getOrThrow().getFirst();
+					changes = DataComponentPatch.CODEC.decode(withRegistryAccess(JsonOps.INSTANCE), changesJson).getOrThrow().getFirst();
 				} else if (nbt != null) {
-					changes = ComponentChanges.CODEC.decode(withRegistryAccess(NbtOps.INSTANCE), StringNbtReader.readCompound(nbt)).getOrThrow().getFirst();
+					changes = DataComponentPatch.CODEC.decode(withRegistryAccess(NbtOps.INSTANCE), TagParser.readCompound(nbt)).getOrThrow().getFirst();
 				}
 				EmiStack stack = create(id, changes, amount);
 				if (chance != 1) {
@@ -91,9 +91,9 @@ public interface EmiStackSerializer<T extends EmiStack> extends EmiIngredientSer
 	@Override
 	default JsonElement serialize(T stack) {
 		String nbt = null;
-		ComponentChanges componentChanges = stack.getComponentChanges();
-		if (componentChanges != ComponentChanges.EMPTY) {
-			nbt = ComponentChanges.CODEC.encodeStart(withRegistryAccess(NbtOps.INSTANCE), componentChanges).getOrThrow().toString();
+		DataComponentPatch componentChanges = stack.getComponentChanges();
+		if (componentChanges != DataComponentPatch.EMPTY) {
+			nbt = DataComponentPatch.CODEC.encodeStart(withRegistryAccess(NbtOps.INSTANCE), componentChanges).getOrThrow().toString();
 		}
 		if (stack.getAmount() == 1 && stack.getChance() == 1 && stack.getRemainder().isEmpty()) {
 			String s = getType() + ":" + stack.getId();

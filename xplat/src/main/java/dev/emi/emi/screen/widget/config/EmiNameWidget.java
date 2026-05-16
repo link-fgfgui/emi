@@ -11,14 +11,14 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Drawable;
-import net.minecraft.text.Style;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.network.chat.Style;
 
-public class EmiNameWidget implements Drawable {
-	private static MinecraftClient client = MinecraftClient.getInstance();
+public class EmiNameWidget implements Renderable {
+	private static Minecraft client = Minecraft.getInstance();
 	private List<String[]> NAMES = Lists.<String[]>newArrayList(
 		"Emi Memy Imi".split(" "),
 		"Exhaustively Many Ingredients".split(" "),
@@ -64,7 +64,7 @@ public class EmiNameWidget implements Drawable {
 	}
 
 	public String interpolate(Random source, String first, String second, float progress) {
-		TextRenderer render = client.textRenderer;
+		Font render = client.textRenderer;
 		String both = first + second;
 		int fw = render.getWidth(first);
 		int sw = render.getWidth(second);

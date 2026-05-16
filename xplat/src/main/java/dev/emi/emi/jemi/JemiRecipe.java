@@ -30,11 +30,11 @@ import mezz.jei.api.gui.inputs.IJeiUserInput;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import mezz.jei.library.focus.FocusGroup;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.recipe.RecipeEntry;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -45,7 +45,7 @@ public class JemiRecipe<T> implements EmiRecipe {
 	public List<EmiIngredient> catalysts = Lists.newArrayList();
 	public List<EmiStack> outputs = Lists.newArrayList();
 	public EmiRecipeCategory recipeCategory;
-	public Identifier originalId, id;
+	public ResourceLocation originalId, id;
 	public IRecipeCategory<T> category;
 	public T recipe;
 	public boolean allowTree = true;
@@ -84,12 +84,12 @@ public class JemiRecipe<T> implements EmiRecipe {
 	}
 
 	@Override
-	public @Nullable RecipeEntry<?> getBackingRecipe() {
+	public @Nullable RecipeHolder<?> getBackingRecipe() {
 		return EmiPort.getRecipe(originalId);
 	}
 
 	@Override
-	public @Nullable Identifier getId() {
+	public @Nullable ResourceLocation getId() {
 		return id;
 	}
 
@@ -187,7 +187,7 @@ public class JemiRecipe<T> implements EmiRecipe {
 		}
 
 		@Override
-		public List<TooltipComponent> getTooltip(int mouseX, int mouseY) {
+		public List<ClientTooltipComponent> getTooltip(int mouseX, int mouseY) {
 			JemiTooltipBuilder builder = new JemiTooltipBuilder();
 			category.getTooltip(builder, recipe, recipeLayoutDrawable.getRecipeSlotsView(), mouseX, mouseY);
 			return builder.tooltip;

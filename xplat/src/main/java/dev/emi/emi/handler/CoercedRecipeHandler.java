@@ -8,33 +8,33 @@ import dev.emi.emi.api.recipe.EmiCraftingRecipe;
 import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.api.recipe.VanillaEmiRecipeCategories;
 import dev.emi.emi.api.recipe.handler.StandardRecipeHandler;
-import dev.emi.emi.mixin.accessor.CraftingResultSlotAccessor;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.inventory.RecipeInputInventory;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.CraftingResultSlot;
-import net.minecraft.screen.slot.Slot;
+import dev.emi.emi.mixin.accessor.ResultSlotAccessor;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ResultSlot;
+import net.minecraft.world.inventory.Slot;
 
-public class CoercedRecipeHandler<T extends ScreenHandler> implements StandardRecipeHandler<T> {
-	private CraftingResultSlot output;
-	private RecipeInputInventory inv;
+public class CoercedRecipeHandler<T extends AbstractContainerMenu> implements StandardRecipeHandler<T> {
+	private ResultSlot output;
+	private CraftingContainer inv;
 
-	public CoercedRecipeHandler(CraftingResultSlot output) {
+	public CoercedRecipeHandler(ResultSlot output) {
 		this.output = output;
-		this.inv = ((CraftingResultSlotAccessor) output).getInput();
+		this.inv = ((ResultSlotAccessor) output).getCraftSlots();
 	}
 
 	@Override
-	public Slot getOutputSlot(ScreenHandler handler) {
+	public ResultSlot getOutputSlot(AbstractContainerMenu handler) {
 		return output;
 	}
 
 	@Override
-	public List<Slot> getInputSources(ScreenHandler handler) {
-		MinecraftClient client = MinecraftClient.getInstance();
-		List<Slot> slots = Lists.newArrayList();
+	public List<ResultSlot> getInputSources(AbstractContainerMenu handler) {
+		Minecraft client = Minecraft.getInstance();
+		List<ResultSlot> slots = Lists.newArrayList();
 		if (output != null) {
-			for (Slot slot : handler.slots) {
+			for (ResultSlot slot : handler.slots) {
 				if (slot.isEnabled() && slot.canTakeItems(client.player) && slot != output) {
 					slots.add(slot);
 				}
@@ -44,14 +44,14 @@ public class CoercedRecipeHandler<T extends ScreenHandler> implements StandardRe
 	}
 
 	@Override
-	public List<Slot> getCraftingSlots(ScreenHandler handler) {
-		List<Slot> slots = Lists.newArrayList();
+	public List<ResultSlot> getCraftingSlots(AbstractContainerMenu handler) {
+		List<ResultSlot> slots = Lists.newArrayList();
 		int width = inv.getWidth();
 		int height = inv.getHeight();
 		for (int i = 0; i < 9; i++) {
 			slots.add(null);
 		}
-		for (Slot slot : handler.slots) {
+		for (ResultSlot slot : handler.slots) {
 			if (slot.inventory == inv && slot.getIndex() < width * height && slot.getIndex() >= 0) {
 				int index = slot.getIndex();
 				index = index * 3 / width;

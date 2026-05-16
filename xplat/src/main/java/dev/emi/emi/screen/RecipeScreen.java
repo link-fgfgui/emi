@@ -31,24 +31,24 @@ import dev.emi.emi.runtime.EmiHistory;
 import dev.emi.emi.runtime.EmiLog;
 import dev.emi.emi.screen.widget.ResolutionButtonWidget;
 import dev.emi.emi.screen.widget.SizedButtonWidget;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Click;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.input.CharInput;
 import net.minecraft.client.input.KeyInput;
-import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 public class RecipeScreen extends Screen {
-	private static final Identifier TEXTURE = EmiPort.id("emi", "textures/gui/background.png");
+	private static final ResourceLocation TEXTURE = EmiPort.id("emi", "textures/gui/background.png");
 	public static @Nullable EmiIngredient resolve = null;
 	private Map<EmiRecipeCategory, List<EmiRecipe>> recipes;
-	public HandledScreen<?> old;
+	public AbstractContainerScreen<?> old;
 	private List<RecipeTab> tabs = Lists.newArrayList();
 	private int tabPageSize = 6;
 	private int tabPage = 0, tab = 0, page = 0;
@@ -64,7 +64,7 @@ public class RecipeScreen extends Screen {
 	int x = (this.width - backgroundWidth) / 2;
 	int y = (this.height - backgroundHeight) / 2;
 
-	public RecipeScreen(HandledScreen<?> old, Map<EmiRecipeCategory, List<EmiRecipe>> recipes) {
+	public RecipeScreen(AbstractContainerScreen<?> old, Map<EmiRecipeCategory, List<EmiRecipe>> recipes) {
 		super(EmiPort.translatable("screen.emi.recipe"));
 		this.old = old;
 		arrows = List.of(
@@ -192,7 +192,7 @@ public class RecipeScreen extends Screen {
 		int categoryNameColor = categoryHovered ? 0xFF22FFFF : 0xFFFFFFFF;
 
 		RecipeTab tab = tabs.get(this.tab);
-		Text text = tab.category.getName();
+		Component text = tab.category.getName();
 		if (client.textRenderer.getWidth(text) > minimumWidth - 40) {
 			int extraWidth = client.textRenderer.getWidth("...");
 			text = EmiPort.literal(client.textRenderer.trimToWidth(text, (minimumWidth - 40) - extraWidth).getString() + "...");
@@ -234,7 +234,7 @@ public class RecipeScreen extends Screen {
 			for (Widget widget : group.widgets) {
 				if (widget instanceof RecipeFillButtonWidget) {
 					if (widget.getBounds().contains(mx, my)) {
-						HandledScreen hs = EmiApi.getHandledScreen();
+						AbstractContainerScreen hs = EmiApi.getHandledScreen();
 						EmiRecipeHandler handler = EmiRecipeFiller.getFirstValidHandler(group.recipe, hs);
 						if (handler != null) {
 							handler.render(group.recipe, new EmiCraftContext(hs, handler.getInventory(hs), EmiCraftContext.Type.FILL_BUTTON), group.widgets, context.raw());
@@ -266,7 +266,7 @@ public class RecipeScreen extends Screen {
 				int my = mouseY - group.y();
 				for (Widget widget : group.widgets) {
 					if (widget.getBounds().contains(mx, my)) {
-						List<TooltipComponent> tooltip = widget.getTooltip(mx, my);
+						List<ClientTooltipComponent> tooltip = widget.getTooltip(mx, my);
 						if (!tooltip.isEmpty()) {
 							EmiRenderHelper.drawTooltip(this, context, tooltip, mouseX, mouseY);
 							hoveredWidget = widget;
@@ -420,7 +420,7 @@ public class RecipeScreen extends Screen {
 		pressedSlot = null;
 		if (click.x() >= x + 19 + buttonOff && click.y() >= y + 5 && click.x() < x + minimumWidth + buttonOff - 19 && click.y() <= y + 5 + 12) {
 			EmiApi.displayAllRecipes();
-			MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.ui(SoundEvents.UI_BUTTON_CLICK, 1.0f));
+			Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.ui(SoundEvents.UI_BUTTON_CLICK, 1.0f));
 			return true;
 		}
 		for (WidgetGroup group : currentPage) {
@@ -455,7 +455,7 @@ public class RecipeScreen extends Screen {
 		}
 		RecipeTab rTab = getTabAt(mx, my);
 		if (rTab != null) {
-			MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.ui(SoundEvents.UI_BUTTON_CLICK, 1.0f));
+			Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.ui(SoundEvents.UI_BUTTON_CLICK, 1.0f));
 			focusCategory(rTab.category);
 			return true;
 		}

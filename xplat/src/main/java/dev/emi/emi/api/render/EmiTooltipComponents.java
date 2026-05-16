@@ -12,9 +12,9 @@ import dev.emi.emi.screen.tooltip.IngredientTooltipComponent;
 import dev.emi.emi.screen.tooltip.RecipeCostTooltipComponent;
 import dev.emi.emi.screen.tooltip.RecipeTooltipComponent;
 import dev.emi.emi.screen.tooltip.RemainderTooltipComponent;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 
 public class EmiTooltipComponents {
 
@@ -50,13 +50,13 @@ public class EmiTooltipComponents {
 	 * @return A tooltip component that displays the amount of a provided stack.
 	 */
 	public static TooltipComponent getAmount(EmiIngredient ingredient) {
-		return of(EmiRenderHelper.getAmountText(ingredient, ingredient.getAmount()).copy().formatted(Formatting.GRAY));
+		return of(EmiRenderHelper.getAmountText(ingredient, ingredient.getAmount()).copy().formatted(ChatFormatting.GRAY));
 	}
 
 	/**
 	 * A shorthand to create a tooltip component from text
 	 */
-	public static TooltipComponent of(Text text) {
+	public static TooltipComponent of(Component text) {
 		return TooltipComponent.of(text.asOrderedText());
 	}
 
@@ -68,7 +68,7 @@ public class EmiTooltipComponents {
 	public static void appendModName(List<TooltipComponent> components, String namespace) {
 		if (EmiConfig.appendModId) {
 			String mod = EmiUtil.getModName(namespace);
-			components.add(of(EmiPort.literal(mod, Formatting.BLUE, Formatting.ITALIC)));
+			components.add(of(EmiPort.literal(mod, ChatFormatting.BLUE, ChatFormatting.ITALIC)));
 		}
 	}
 }

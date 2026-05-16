@@ -16,25 +16,25 @@ import dev.emi.emi.runtime.EmiDrawContext;
 import dev.emi.emi.screen.EmiScreenManager;
 import dev.emi.emi.search.EmiSearch;
 import dev.emi.emi.search.QueryType;
-import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.Click;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.input.KeyInput;
 import net.minecraft.client.input.MouseInput;
-import net.minecraft.client.resource.language.I18n;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RotationAxis;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.ChatFormatting;
+import net.minecraft.util.Tuple;
+import net.minecraft.util.Mth;
+import com.mojang.math.Axis;
 
-public class EmiSearchWidget extends TextFieldWidget {
+public class EmiSearchWidget extends EditBox {
 	private static final Pattern ESCAPE = Pattern.compile("\\\\.");
 	private List<String> searchHistory = Lists.newArrayList();
 	private int searchHistoryIndex = 0;
-	private List<Pair<Integer, Style>> styles;
+	private List<Tuple<Integer, Style>> styles;
 	private long lastClick = 0;
 	private String last = "";
 	private long lastRender = System.currentTimeMillis();
@@ -43,18 +43,18 @@ public class EmiSearchWidget extends TextFieldWidget {
 	// Reimplement focus because other mods keep breaking it
 	public boolean isFocused;
 
-	public EmiSearchWidget(TextRenderer textRenderer, int x, int y, int width, int height) {
+	public EmiSearchWidget(Font textRenderer, int x, int y, int width, int height) {
 		super(textRenderer, x, y, width, height, EmiPort.literal(""));
 		this.setFocusUnlocked(true);
 		this.setEditableColor(-1);
 		this.setUneditableColor(-1);
 		this.setMaxLength(256);
 		this.addFormatter((string, stringStart) -> {
-			MutableText text = null;
+			MutableComponent text = null;
 			int s = 0;
 			int last = 0;
 			for (; s < styles.size(); s++) {
-				Pair<Integer, Style> style = styles.get(s);
+				Tuple<Integer, Style> style = styles.get(s);
 				int end = style.getLeft();
 				if (end > stringStart) {
 					if (end - stringStart >= string.length()) {
@@ -70,7 +70,7 @@ public class EmiSearchWidget extends TextFieldWidget {
 				}
 			}
 			for (; s < styles.size(); s++) {
-				Pair<Integer, Style> style = styles.get(s);
+				Tuple<Integer, Style> style = styles.get(s);
 				int end = style.getLeft();
 				if (end - stringStart >= string.length()) {
 					EmiPort.append(text, EmiPort.literal(string.substring(last, string.length()), style.getRight()));
@@ -89,17 +89,17 @@ public class EmiSearchWidget extends TextFieldWidget {
 			}
 			EmiScreenManager.updateSearchSidebar();
 			Matcher matcher = EmiSearch.TOKENS.matcher(string);
-			List<Pair<Integer, Style>> styles = Lists.newArrayList();
+			List<Tuple<Integer, Style>> styles = Lists.newArrayList();
 			int last = 0;
 			while (matcher.find()) {
 				int start = matcher.start();
 				int end = matcher.end();
 				if (last < start) {
-					styles.add(new Pair<Integer, Style>(start, Style.EMPTY.withFormatting(Formatting.WHITE)));
+					styles.add(new Pair<Integer, Style>(start, Style.EMPTY.withFormatting(ChatFormatting.WHITE)));
 				}
 				String group = matcher.group();
 				if (group.startsWith("-")) {
-					styles.add(new Pair<Integer, Style>(start + 1, Style.EMPTY.withFormatting(Formatting.RED)));
+					styles.add(new Pair<Integer, Style>(start + 1, Style.EMPTY.withFormatting(ChatFormatting.RED)));
 					start++;
 					group = group.substring(1);
 				}
@@ -130,7 +130,7 @@ public class EmiSearchWidget extends TextFieldWidget {
 				last = end;
 			}
 			if (last < string.length()) {
-				styles.add(new Pair<Integer, Style>(string.length(), Style.EMPTY.withFormatting(Formatting.WHITE)));
+				styles.add(new Pair<Integer, Style>(string.length(), Style.EMPTY.withFormatting(ChatFormatting.WHITE)));
 			}
 			this.styles = styles;
 			EmiSearch.search(string);
@@ -254,7 +254,7 @@ public class EmiSearchWidget extends TextFieldWidget {
         context.push();
 		if (deg != 0) {
             context.matrices().translate(this.x + this.width / 2, this.y + this.height / 2/*, 0*/);
-            context.matrices().rotate(RotationAxis.NEGATIVE_Z.rotationDegrees(deg).angle());
+            context.matrices().rotate(Axis.NEGATIVE_Z.rotationDegrees(deg).angle());
             context.matrices().translate(-(this.x + this.width / 2), -(this.y + this.height / 2)/*, 0*/);
 //			EmiPort.applyModelViewMatrix();
 		}
@@ -262,7 +262,7 @@ public class EmiSearchWidget extends TextFieldWidget {
 		if (lower.contains("jeb_")) {
 			int amount = 0x3FF;
 			float h = ((lastRender & amount) % (float) amount) / (float) amount;
-			int rgb = MathHelper.hsvToRgb(h, 1, 1);
+			int rgb = Mth.hsvToRgb(h, 1, 1);
 //			context.setColor(((rgb >> 16) & 0xFF) / 255f, ((rgb >> 8) & 0xFF) / 255f, ((rgb >> 0) & 0xFF) / 255f);
 		}
 

@@ -11,17 +11,17 @@ import dev.emi.emi.api.recipe.EmiPatternCraftingRecipe;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.GeneratedSlotWidget;
 import dev.emi.emi.api.widget.SlotWidget;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.resources.ResourceLocation;
 
 public class EmiRepairItemRecipe extends EmiPatternCraftingRecipe {
 	public static final List<Item> TOOLS = EmiPort.getItemRegistry().stream()
-			.filter(i -> i.getComponents().getOrDefault(DataComponentTypes.MAX_DAMAGE, 0) > 0).collect(Collectors.toList());
+			.filter(i -> i.getComponents().getOrDefault(DataComponents.MAX_DAMAGE, 0) > 0).collect(Collectors.toList());
 	private final Item tool;
 
-	public EmiRepairItemRecipe(Item tool, Identifier id) {
+	public EmiRepairItemRecipe(Item tool, ResourceLocation id) {
 		super(List.of(
 				EmiStack.of(tool),
 				EmiStack.of(tool)),

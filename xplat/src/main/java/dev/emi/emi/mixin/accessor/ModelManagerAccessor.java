@@ -1,11 +1,11 @@
 package dev.emi.emi.mixin.accessor;
 
-import net.minecraft.client.render.model.BakedModelManager;
+import net.minecraft.client.resources.model.ModelManager;
 
 import org.spongepowered.asm.mixin.Mixin;
 
-@Mixin(BakedModelManager.class)
-public interface BakedModelManagerAccessor {
+@Mixin(ModelManager.class)
+public interface ModelManagerAccessor {
 
 //	@Accessor("models")
 //    Map<ModelIdentifier, BakedModel> getModels();

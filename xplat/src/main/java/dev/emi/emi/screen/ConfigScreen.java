@@ -48,20 +48,20 @@ import dev.emi.emi.screen.widget.config.SidebarPagesWidget;
 import dev.emi.emi.screen.widget.config.SidebarSubpanelsWidget;
 import dev.emi.emi.screen.widget.config.SubGroupNameWidget;
 import dev.emi.emi.search.EmiSearch;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Click;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.input.KeyInput;
-import net.minecraft.client.resource.language.I18n;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.text.StringVisitable;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
+import net.minecraft.client.resources.language.I18n;
+import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.Component;
 
 public class ConfigScreen extends Screen {
 	private static final int maxWidth = 240;
@@ -92,20 +92,20 @@ public class ConfigScreen extends Screen {
 	public void close() {
 		EmiConfig.writeConfig();
 		EmiSearch.update();
-		MinecraftClient.getInstance().setScreen(last);
+		Minecraft.getInstance().setScreen(last);
 	}
 
 	@SuppressWarnings("unchecked")
-	public static List<TooltipComponent> getFieldTooltip(Field field) {
-		List<TooltipComponent> text;
+	public static List<ClientTooltipComponent> getFieldTooltip(Field field) {
+		List<ClientTooltipComponent> text;
 		ConfigValue annot = field.getAnnotation(ConfigValue.class);
 		String key = "config.emi.tooltip." + annot.value().replace('-', '_');
 		Comment comment = field.getAnnotation(Comment.class);
 		if (I18n.hasTranslation(key)) {
-			text = (List<TooltipComponent>) (Object) Arrays.stream(I18n.translate(key).split("\n"))
+			text = (List<ClientTooltipComponent>) (Object) Arrays.stream(I18n.translate(key).split("\n"))
 				.map(EmiPort::literal).map(EmiTooltipComponents::of).toList();
 		} else if (comment != null) {
-			text = (List<TooltipComponent>) (Object) Arrays.stream(comment.value().split("\n"))
+			text = (List<ClientTooltipComponent>) (Object) Arrays.stream(comment.value().split("\n"))
 				.map(EmiPort::literal).map(EmiTooltipComponents::of).toList();
 		} else {
 			text = null;
@@ -145,22 +145,22 @@ public class ConfigScreen extends Screen {
 		this.addDrawable(search.field);
 		this.resetButton = EmiPort.newButton(x + 2, height - 30, w / 2 - 2, 20, EmiPort.translatable("gui.done"), button -> {
 			EmiConfig.loadConfig(QDCSS.load("revert", originalConfig));
-			MinecraftClient client = MinecraftClient.getInstance();
+			Minecraft client = Minecraft.getInstance();
 			this.init(client.getWindow().getScaledWidth(), client.getWindow().getScaledHeight());
 		});
 		this.addDrawableChild(EmiPort.newButton(x + w / 2 + 2, height - 30, w / 2 - 2, 20, EmiPort.translatable("gui.done"), button -> {
 			this.close();
 		}));
 		this.addDrawableChild(EmiPort.newButton(x + w / 2 + 2, height - 52, w / 2 - 24, 20, EmiPort.translatable("screen.emi.presets"), button -> {
-			MinecraftClient client = MinecraftClient.getInstance();
+			Minecraft client = Minecraft.getInstance();
 			client.setScreen(new ConfigPresetScreen(this));
 		}));
 		this.addDrawableChild(new SizedButtonWidget(x + w - 20, height - 52, 20, 20, 164, 0, () -> true, widget -> {
 			EmiConfig.setGlobalState(!EmiConfig.useGlobalConfig);
 			ConfigScreen.this.resize(width, height);
 		}, () -> (EmiConfig.useGlobalConfig ? 40 : 0), () -> {
-			return (List<Text>) (Object) Arrays.stream(I18n.translate("tooltip.emi.config.global").split("\n"))
-				.map(s -> client.textRenderer.getTextHandler().wrapLines(StringVisitable.plain(s), maxWidth, Style.EMPTY))
+			return (List<Component>) (Object) Arrays.stream(I18n.translate("tooltip.emi.config.global").split("\n"))
+				.map(s -> client.textRenderer.getTextHandler().wrapLines(FormattedText.plain(s), maxWidth, Style.EMPTY))
 				.flatMap(l -> l.stream()).map(v -> EmiPort.literal(v.getString())).toList();
 		}));
 		this.addDrawableChild(resetButton);
@@ -181,7 +181,7 @@ public class ConfigScreen extends Screen {
 					}
 					if (!group.equals(lastGroup)) {
 						lastGroup = group;
-						Text text = EmiPort.translatable("config.emi.group." + group.replace('-', '_'));
+						Component text = EmiPort.translatable("config.emi.group." + group.replace('-', '_'));
 						lastGroupWidget = new GroupNameWidget(group, text);
 						if (collapsed.contains(text.getString())) {
 							lastGroupWidget.collapsed = true;
@@ -191,7 +191,7 @@ public class ConfigScreen extends Screen {
 					ConfigGroup configGroup = field.getAnnotation(ConfigGroup.class);
 					if (configGroup != null) {
 						currentGroup = configGroup;
-						Text text = EmiPort.translatable("config.emi.group." + configGroup.value().replace('-', '_'));
+						Component text = EmiPort.translatable("config.emi.group." + configGroup.value().replace('-', '_'));
 						currentSubGroupWidget = new SubGroupNameWidget(configGroup.value(), text);
 						if (collapsed.contains(text.getString())) {
 							currentSubGroupWidget.collapsed = true;
@@ -200,7 +200,7 @@ public class ConfigScreen extends Screen {
 						list.addEntry(currentSubGroupWidget);
 					}
 					Predicate<?> predicate = EmiConfig.FILTERS.getOrDefault(annot.value(), v -> true);
-					Text translation = EmiPort.translatable("config.emi." + annot.value().replace('-', '_'));
+					Component translation = EmiPort.translatable("config.emi." + annot.value().replace('-', '_'));
 					ConfigEntryWidget entry = null;
 					if (field.getType() == boolean.class) {
 						entry = new BooleanWidget(translation, getFieldTooltip(field), searchSupplier, new Mutator<Boolean>() {
@@ -381,7 +381,7 @@ public class ConfigScreen extends Screen {
     public boolean mouseClicked(Click click, boolean doubled) {
         if (activeBind != null) {
             pushModifier(0);
-            activeBind.setBind(activeBindOffset, new ModifiedKey(InputUtil.Type.MOUSE.createFromCode(click.button()), activeModifiers));
+            activeBind.setBind(activeBindOffset, new ModifiedKey(InputConstants.Type.Type.createFromCode(click.button()), activeModifiers));
             activeBind = null;
             return true;
         }
@@ -402,9 +402,9 @@ public class ConfigScreen extends Screen {
 			} else {
 				pushModifier(0);
 				if (input.isEscape()) {
-					activeBind.setBind(activeBindOffset, new ModifiedKey(InputUtil.UNKNOWN_KEY, 0));
+					activeBind.setBind(activeBindOffset, new ModifiedKey(InputConstants.UNKNOWN_KEY, 0));
 				} else {
-					activeBind.setBind(activeBindOffset, new ModifiedKey(InputUtil.Type.KEYSYM.createFromCode(input.key()), activeModifiers));
+					activeBind.setBind(activeBindOffset, new ModifiedKey(InputConstants.Type.Type.createFromCode(input.key()), activeModifiers));
 				}
 				activeBind = null;
 				updateChanges();
@@ -418,7 +418,7 @@ public class ConfigScreen extends Screen {
 			if (super.keyPressed(input)) {
 				return true;
 			}
-			if (this.getFocused() instanceof TextFieldWidget tfw && tfw.isFocused()) {
+			if (this.getFocused() instanceof EditBox tfw && tfw.isFocused()) {
 				if (input.isEscape()) {
 					EmiPort.focus(tfw, false);
 					return true;
@@ -442,7 +442,7 @@ public class ConfigScreen extends Screen {
 		if (activeBind != null) {
 			activeModifiers &= ~EmiInput.maskFromCode(keyCode);
 			if (keyCode == lastModifier) {
-				activeBind.setBind(activeBindOffset, new ModifiedKey(InputUtil.Type.KEYSYM.createFromCode(keyCode), activeModifiers));
+				activeBind.setBind(activeBindOffset, new ModifiedKey(InputConstants.Type.Type.createFromCode(keyCode), activeModifiers));
 				activeBind = null;
 			}
 			return true;

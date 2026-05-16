@@ -4,14 +4,14 @@ import dev.emi.emi.EmiPort;
 import dev.emi.emi.config.EmiConfig;
 import dev.emi.emi.runtime.EmiDrawContext;
 
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.toast.Toast;
-import net.minecraft.client.toast.ToastManager;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.toasts.Toast;
+import net.minecraft.client.gui.components.toasts.ToastComponent;
+import net.minecraft.resources.ResourceLocation;
 
 public class DisabledToast implements Toast {
-	private static final Identifier TEXTURE = EmiPort.id("toast/advancement");
+	private static final ResourceLocation TEXTURE = EmiPort.id("toast/advancement");
 // TODO
 //	@Override
 //	public Visibility draw(DrawContext raw, ToastManager manager, long time) {
@@ -40,12 +40,12 @@ public class DisabledToast implements Toast {
     }
 
     @Override
-    public void update(ToastManager manager, long time) {
+    public void update(ToastComponent manager, long time) {
 
     }
 
     @Override
-    public void draw(DrawContext context, TextRenderer textRenderer, long startTime) {
+    public void draw(DrawContext context, Font textRenderer, long startTime) {
 //        EmiDrawContext context = EmiDrawContext.wrap(raw);
 //        context.resetColor();
 //        raw.drawGuiTexture(TEXTURE, 0, 0, this.getWidth(), this.getHeight());

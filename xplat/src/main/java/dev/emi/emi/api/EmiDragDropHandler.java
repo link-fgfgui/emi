@@ -13,13 +13,13 @@ import com.google.common.collect.Maps;
 
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.widget.Bounds;
-import dev.emi.emi.mixin.accessor.HandledScreenAccessor;
+import dev.emi.emi.mixin.accessor.AbstractContainerScreenAccessor;
 import dev.emi.emi.runtime.EmiDrawContext;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.Slot;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
 
 public interface EmiDragDropHandler<T extends Screen> {
 	
@@ -79,7 +79,7 @@ public interface EmiDragDropHandler<T extends Screen> {
 	 * A simple, slot based drag drop handler.
 	 * Slots render a highlight while a stack is dragged.
 	 */
-	public static class SlotBased<T extends HandledScreen<?>> extends BoundsBased<T> {
+	public static class SlotBased<T extends AbstractContainerScreen<?>> extends BoundsBased<T> {
 		
 		/**
 		 * @param slots A function to get a list of slot targets given a screen
@@ -97,9 +97,9 @@ public interface EmiDragDropHandler<T extends Screen> {
 			super(t -> SlotBased.<T>map(t, screen -> filter(screen, slotFilter), consumer));
 		}
 
-		private static <T extends HandledScreen<?>> Collection<Slot> filter(T t, BiPredicate<T, Slot> slotFilter) {
+		private static <T extends AbstractContainerScreen<?>> Collection<Slot> filter(T t, BiPredicate<T, Slot> slotFilter) {
 			List<Slot> slots = Lists.newArrayList();
-			ScreenHandler handler = t.getScreenHandler();
+			AbstractContainerMenu handler = t.getScreenHandler();
 			for (Slot slot : handler.slots) {
 				if (slotFilter.test(t, slot)) {
 					slots.add(slot);
@@ -108,12 +108,12 @@ public interface EmiDragDropHandler<T extends Screen> {
 			return slots;
 		}
 
-		private static <T extends HandledScreen<?>> Map<Bounds, Consumer<EmiIngredient>>
+		private static <T extends AbstractContainerScreen<?>> Map<Bounds, Consumer<EmiIngredient>>
 				map(T t, Function<T, Collection<Slot>> slots, TriConsumer<T, Slot, EmiIngredient> consumer) {
 			Map<Bounds, Consumer<EmiIngredient>> map = Maps.newHashMap();
 			for (Slot slot : slots.apply(t)) {
-				map.put(new Bounds(((HandledScreenAccessor) t).getX() + slot.x - 1,
-					((HandledScreenAccessor) t).getY() + slot.y - 1, 18, 18), i -> consumer.accept(t, slot, i));
+				map.put(new Bounds(((AbstractContainerScreenAccessor) t).getLeftPos() + slot.x - 1,
+					((AbstractContainerScreenAccessor) t).getTopPos() + slot.y - 1, 18, 18), i -> consumer.accept(t, slot, i));
 			}
 			return map;
 		}

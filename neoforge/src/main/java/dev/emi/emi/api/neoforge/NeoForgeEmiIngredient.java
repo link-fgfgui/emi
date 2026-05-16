@@ -2,7 +2,7 @@ package dev.emi.emi.api.neoforge;
 
 import dev.emi.emi.api.stack.EmiIngredient;
 
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 import net.minecraft.recipe.display.SlotDisplayContexts;
 import net.minecraft.util.context.ContextParameterMap;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;

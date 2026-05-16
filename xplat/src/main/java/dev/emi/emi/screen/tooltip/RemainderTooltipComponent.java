@@ -10,10 +10,10 @@ import dev.emi.emi.EmiPort;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.runtime.EmiDrawContext;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.client.gui.Font;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 
 public class RemainderTooltipComponent implements EmiTooltipComponent {
 	public List<Remainder> remainders = Lists.newArrayList();
@@ -43,12 +43,12 @@ public class RemainderTooltipComponent implements EmiTooltipComponent {
 	}
 
 	@Override
-	public int getHeight(TextRenderer textRenderer) {
+	public int getHeight(Font textRenderer) {
 		return 18 * remainders.size();
 	}
 
 	@Override
-	public int getWidth(TextRenderer textRenderer) {
+	public int getWidth(Font textRenderer) {
 		return 18 * 3;
 	}
 
@@ -66,7 +66,7 @@ public class RemainderTooltipComponent implements EmiTooltipComponent {
 				is.setDamage(is.getDamage() - remainder.damage);
 				context.raw().drawStackOverlay(render.text, is, 18 * 2, 18 * i, "");
 				context.drawStack(input, 18 * 2, 18 * i, -1 ^ (EmiIngredient.RENDER_ICON | EmiIngredient.RENDER_AMOUNT | EmiIngredient.RENDER_REMAINDER));
-				Text t = remainder.damage > 0 ? EmiPort.literal("+" + remainder.damage, Formatting.GREEN) : EmiPort.literal("" + remainder.damage, Formatting.RED);
+				Component t = remainder.damage > 0 ? EmiPort.literal("+" + remainder.damage, ChatFormatting.GREEN) : EmiPort.literal("" + remainder.damage, ChatFormatting.RED);
 				int width = render.text.getWidth(t);
 				context.push();
 //				context.matrices().translate(0, 0, 200);
@@ -83,9 +83,9 @@ public class RemainderTooltipComponent implements EmiTooltipComponent {
 			boolean chanced = remainder.chance != 1;
 			text.draw(EmiPort.literal("->"), 20, 5 + i * 18 - (chanced ? 4 : 0), 0xFFFFFFFF, true);
 			if (chanced) {
-				Text t = EmiPort.literal(EmiTooltip.TEXT_FORMAT.format(remainder.chance * 100) + "%");
+				Component t = EmiPort.literal(EmiTooltip.TEXT_FORMAT.format(remainder.chance * 100) + "%");
 				int tx = text.renderer.getWidth(t);
-				text.draw(t, 27 - tx / 2, 9 + i * 18, Formatting.GOLD.getColorValue(), false);
+				text.draw(t, 27 - tx / 2, 9 + i * 18, ChatFormatting.GOLD.getColorValue(), false);
 			}
 		}
 	}

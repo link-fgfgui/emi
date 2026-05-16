@@ -4,7 +4,7 @@ import dev.emi.emi.EmiPort;
 import dev.emi.emi.api.recipe.EmiCraftingRecipe;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
-import net.minecraft.recipe.ShapelessRecipe;
+import net.minecraft.world.item.crafting.ShapelessRecipe;
 
 public class EmiShapelessRecipe extends EmiCraftingRecipe {
 	

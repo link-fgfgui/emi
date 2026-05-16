@@ -15,9 +15,9 @@ import dev.emi.emi.network.EmiNetwork;
 import dev.emi.emi.screen.EmiScreenManager;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.world.entity.player.Player;
 
 // Yes, this is a thing that exists
 public class EmiChess {
@@ -175,9 +175,9 @@ public class EmiChess {
 	}
 
 	private static void invitePlayer() {
-		MinecraftClient client = MinecraftClient.getInstance();
+		Minecraft client = Minecraft.getInstance();
 		String name = EmiScreenManager.search.getText();
-		for (AbstractClientPlayerEntity player : client.world.getPlayers()) {
+		for (AbstractClientPlayer player : client.world.getPlayers()) {
 			if (player.getName().getString().equals(name)) {
 				get().opponent = player.getUuid();
 				sendNetwork(player.getUuid(), -1, 0, 0);
@@ -190,8 +190,8 @@ public class EmiChess {
 	}
 
 	public static void receiveNetwork(UUID uuid, int type, int start, int end) {
-		MinecraftClient client = MinecraftClient.getInstance();
-		PlayerEntity player = client.world.getPlayerByUuid(uuid);
+		Minecraft client = Minecraft.getInstance();
+		AbstractClientPlayer player = client.world.getPlayerByUuid(uuid);
 		if (player == null) {
 			return;
 		}

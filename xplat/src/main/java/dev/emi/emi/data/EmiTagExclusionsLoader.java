@@ -10,39 +10,39 @@ import com.google.gson.JsonObject;
 import dev.emi.emi.EmiPort;
 import dev.emi.emi.registry.EmiTags;
 import dev.emi.emi.runtime.EmiLog;
-import net.minecraft.resource.Resource;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.resource.SinglePreparationResourceReloader;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
-import net.minecraft.util.profiler.Profiler;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.util.profiling.ProfilerFiller;
 
-public class EmiTagExclusionsLoader extends SinglePreparationResourceReloader<TagExclusions>
+public class EmiTagExclusionsLoader extends SimplePreparableReloadListener<TagExclusions>
 		implements EmiResourceReloadListener {
 	private static final Gson GSON = new Gson();
-	private static final Identifier ID = EmiPort.id("emi:tag_exclusions");
+	private static final ResourceLocation ID = EmiPort.id("emi:tag_exclusions");
 
 	@Override
-	public TagExclusions prepare(ResourceManager manager, Profiler profiler) {
+	public TagExclusions prepare(ResourceManager manager, ProfilerFiller profiler) {
 		TagExclusions exclusions = new TagExclusions();
-		for (Identifier id : EmiPort.findResources(manager, "tag/exclusions", i -> i.endsWith(".json"))) {
+		for (ResourceLocation id : EmiPort.findResources(manager, "tag/exclusions", i -> i.endsWith(".json"))) {
 			if (!id.getNamespace().equals("emi")) {
 				continue;
 			}
 			try {
 				for (Resource resource : manager.getAllResources(id)) {
 					InputStreamReader reader = new InputStreamReader(EmiPort.getInputStream(resource));
-					JsonObject json = JsonHelper.deserialize(GSON, reader, JsonObject.class);
+					JsonObject json = GsonHelper.deserialize(GSON, reader, JsonObject.class);
 					try {
-						if (JsonHelper.getBoolean(json, "replace", false)) {
+						if (GsonHelper.getBoolean(json, "replace", false)) {
 							exclusions.clear();
 						}
 						for (String key : json.keySet()) {
-							Identifier type = EmiPort.id(key);
-							if (JsonHelper.hasArray(json, key)) {
-								JsonArray arr = JsonHelper.getArray(json, key);
+							ResourceLocation type = EmiPort.id(key);
+							if (GsonHelper.hasArray(json, key)) {
+								JsonArray arr = GsonHelper.getArray(json, key);
 								for (JsonElement el : arr) {
-									Identifier eid = EmiPort.id(el.getAsString());
+									ResourceLocation eid = EmiPort.id(el.getAsString());
 									if (key.equals("exclusions")) {
 										exclusions.add(eid);
 										if (eid.getNamespace().equals("c")) {
@@ -69,12 +69,12 @@ public class EmiTagExclusionsLoader extends SinglePreparationResourceReloader<Ta
 	}
 
 	@Override
-	public void apply(TagExclusions exclusions, ResourceManager manager, Profiler profiler) {
+	public void apply(TagExclusions exclusions, ResourceManager manager, ProfilerFiller profiler) {
 		EmiTags.exclusions = exclusions;
 	}
 
 	@Override
-	public Identifier getEmiId() {
+	public ResourceLocation getEmiId() {
 		return ID;
 	}
 }

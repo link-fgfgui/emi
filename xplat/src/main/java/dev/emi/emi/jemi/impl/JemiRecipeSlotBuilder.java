@@ -18,9 +18,9 @@ import mezz.jei.api.ingredients.IIngredientRenderer;
 import mezz.jei.api.ingredients.IIngredientType;
 import mezz.jei.api.ingredients.ITypedIngredient;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.recipe.Ingredient;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.recipe.display.SlotDisplay;
 
 public class JemiRecipeSlotBuilder implements IRecipeSlotBuilder {
@@ -59,7 +59,7 @@ public class JemiRecipeSlotBuilder implements IRecipeSlotBuilder {
     }
 
     @Override
-    public IRecipeSlotBuilder add(Fluid fluid, long l, ComponentChanges componentChanges) {
+    public IRecipeSlotBuilder add(Fluid fluid, long l, DataComponentPatch componentChanges) {
         acceptor.add(fluid, l, componentChanges);
         return this;
     }
@@ -101,7 +101,7 @@ public class JemiRecipeSlotBuilder implements IRecipeSlotBuilder {
 	}
 
 	@Override
-	public IRecipeSlotBuilder addFluidStack(Fluid fluid, long amount, ComponentChanges componentChanges) {
+	public IRecipeSlotBuilder addFluidStack(Fluid fluid, long amount, DataComponentPatch componentChanges) {
 		acceptor.addFluidStack(fluid, amount, componentChanges);
 		return this;
 	}

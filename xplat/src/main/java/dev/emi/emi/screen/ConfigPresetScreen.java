@@ -13,19 +13,19 @@ import dev.emi.emi.config.EmiConfig.ConfigValue;
 import dev.emi.emi.runtime.EmiDrawContext;
 import dev.emi.emi.screen.widget.config.EmiNameWidget;
 import dev.emi.emi.screen.widget.config.ListWidget;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.input.KeyInput;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 public class ConfigPresetScreen extends Screen {
 	private final ConfigScreen last;
 	private ListWidget list;
-	public ButtonWidget resetButton;
+	public Button resetButton;
 
 	public ConfigPresetScreen(ConfigScreen last) {
 		super(EmiPort.translatable("screen.emi.presets"));
@@ -40,7 +40,7 @@ public class ConfigPresetScreen extends Screen {
 		int x = (width - w) / 2;
 		this.resetButton = EmiPort.newButton(x + 2, height - 30, w / 2 - 2, 20, EmiPort.translatable("gui.done"), button -> {
 			EmiConfig.loadConfig(QDCSS.load("revert", last.originalConfig));
-			MinecraftClient client = MinecraftClient.getInstance();
+			Minecraft client = Minecraft.getInstance();
 			this.init(client.getWindow().getScaledWidth(), client.getWindow().getScaledHeight());
 		});
 		this.addDrawableChild(resetButton);
@@ -55,10 +55,10 @@ public class ConfigPresetScreen extends Screen {
 					if (field.get(null) instanceof Runnable runnable) {
 						ConfigGroup group = field.getDeclaredAnnotation(ConfigGroup.class);
 						if (group != null) {
-							Text translation = EmiPort.translatable("config.emi." + group.value().replace('-', '_'));
+							Component translation = EmiPort.translatable("config.emi." + group.value().replace('-', '_'));
 							list.addEntry(new PresetGroupWidget(translation));
 						}
-						Text translation = EmiPort.translatable("config.emi." + config.value().replace('-', '_'));
+						Component translation = EmiPort.translatable("config.emi." + config.value().replace('-', '_'));
 						list.addEntry(new PresetWidget(runnable, translation, ConfigScreen.getFieldTooltip(field)));
 					}
 				}
@@ -90,7 +90,7 @@ public class ConfigPresetScreen extends Screen {
 
 	@Override
 	public void close() {
-		MinecraftClient.getInstance().setScreen(last);
+		Minecraft.getInstance().setScreen(last);
 	}
 
     @Override
@@ -125,10 +125,10 @@ public class ConfigPresetScreen extends Screen {
 	}
 
 	public class PresetWidget extends ListWidget.Entry {
-		private final ButtonWidget button;
-		private final List<TooltipComponent> tooltip;
+		private final Button button;
+		private final List<ClientTooltipComponent> tooltip;
 
-		public PresetWidget(Runnable runnable, Text name, List<TooltipComponent> tooltip) {
+		public PresetWidget(Runnable runnable, Component name, List<ClientTooltipComponent> tooltip) {
 			button = EmiPort.newButton(0, 0, 200, 20, name, t -> {
 				runnable.run();
 				updateChanges();
@@ -137,7 +137,7 @@ public class ConfigPresetScreen extends Screen {
 		}
 
 		@Override
-		public List<? extends Element> children() {
+		public List<? extends GuiEventListener> children() {
 			return List.of(button);
 		}
 
@@ -156,14 +156,14 @@ public class ConfigPresetScreen extends Screen {
 	}
 
 	public class PresetGroupWidget extends ListWidget.Entry {
-		private final Text text;
+		private final Component text;
 
-		public PresetGroupWidget(Text text) {
+		public PresetGroupWidget(Component text) {
 			this.text = text;
 		}
 
 		@Override
-		public List<? extends Element> children() {
+		public List<? extends GuiEventListener> children() {
 			return List.of();
 		}
 

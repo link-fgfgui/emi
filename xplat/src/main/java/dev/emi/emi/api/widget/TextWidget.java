@@ -1,20 +1,20 @@
 package dev.emi.emi.api.widget;
 
 import dev.emi.emi.runtime.EmiDrawContext;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.text.OrderedText;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.util.FormattedCharSequence;
 
 public class TextWidget extends Widget {
-	private static final MinecraftClient CLIENT = MinecraftClient.getInstance();
-	protected final OrderedText text;
+	private static final Minecraft CLIENT = Minecraft.getInstance();
+	protected final FormattedCharSequence text;
 	protected final int x, y;
 	protected final int color;
 	protected final boolean shadow;
 	protected Alignment horizontalAlignment = Alignment.START;
 	protected Alignment verticalAlignment = Alignment.START;
 
-	public TextWidget(OrderedText text, int x, int y, int color, boolean shadow) {
+	public TextWidget(FormattedCharSequence text, int x, int y, int color, boolean shadow) {
 		this.text = text;
 		this.x = x;
 		this.y = y;

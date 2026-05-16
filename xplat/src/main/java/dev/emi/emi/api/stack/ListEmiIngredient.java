@@ -10,8 +10,8 @@ import dev.emi.emi.EmiPort;
 import dev.emi.emi.api.render.EmiRender;
 import dev.emi.emi.screen.tooltip.EmiTextTooltipWrapper;
 import dev.emi.emi.screen.tooltip.IngredientTooltipComponent;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 
 @ApiStatus.Internal
 public class ListEmiIngredient implements EmiIngredient {
@@ -83,7 +83,7 @@ public class ListEmiIngredient implements EmiIngredient {
 	}
 
 	@Override
-	public void render(DrawContext draw, int x, int y, float delta, int flags) {
+	public void render(GuiGraphics draw, int x, int y, float delta, int flags) {
 		int item = (int) (System.currentTimeMillis() / 1000 % ingredients.size());
 		EmiIngredient current = ingredients.get(item);
 		if ((flags & RENDER_ICON) != 0) {

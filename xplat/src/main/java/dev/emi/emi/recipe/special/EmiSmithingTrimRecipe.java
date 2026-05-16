@@ -10,9 +10,9 @@ import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
 import dev.emi.emi.recipe.EmiSmithingRecipe;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.recipe.SmithingRecipe;
-import net.minecraft.recipe.input.SmithingRecipeInput;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.crafting.SmithingRecipe;
+import net.minecraft.world.item.crafting.SmithingRecipeInput;
 
 public class EmiSmithingTrimRecipe extends EmiSmithingRecipe {
 	private final SmithingRecipe recipe;
@@ -41,7 +41,7 @@ public class EmiSmithingTrimRecipe extends EmiSmithingRecipe {
 		EmiStack input = this.input.getEmiStacks().get(r.nextInt(this.input.getEmiStacks().size()));
 		EmiStack addition = this.addition.getEmiStacks().get(r.nextInt(this.addition.getEmiStacks().size()));
 		SmithingRecipeInput inv = new SmithingRecipeInput(template.getEmiStacks().get(0).getItemStack(), input.getItemStack(), addition.getItemStack());
-		MinecraftClient client = MinecraftClient.getInstance();
+		Minecraft client = Minecraft.getInstance();
 		return new EmiStack[] {
 			input,
 			addition,

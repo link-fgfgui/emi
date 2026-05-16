@@ -45,21 +45,21 @@ import dev.emi.emi.runtime.EmiHistory;
 import dev.emi.emi.screen.StackBatcher.Batchable;
 import dev.emi.emi.screen.tooltip.EmiTooltip;
 import dev.emi.emi.screen.tooltip.RecipeTooltipComponent;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Click;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.input.KeyInput;
-import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
+import net.minecraft.util.Mth;
 
 public class BoMScreen extends Screen {
 	private static final int NODE_WIDTH = 30;
@@ -76,13 +76,13 @@ public class BoMScreen extends Screen {
 	private List<Cost> costs = Lists.newArrayList();
 	private EmiPlayerInventory playerInv;
 	private boolean hasRemainders = false;;
-	public HandledScreen<?> old;
+	public AbstractContainerScreen<?> old;
 	private int nodeWidth = 0;
 	private int nodeHeight = 0;
 	private int lastMouseX, lastMouseY;
 	private double scrollAcc = 0;
 
-	public BoMScreen(HandledScreen<?> old) {
+	public BoMScreen(AbstractContainerScreen<?> old) {
 		super(EmiPort.translatable("screen.emi.recipe_tree"));
 		this.old = old;
 	}
@@ -209,8 +209,8 @@ public class BoMScreen extends Screen {
 		int xBound = scaledWidth / 2 + contentWidth - 100;
 		int topBound = scaledHeight * 1 / -2 + 20;
 		int bottomBound = contentHeight + scaledHeight / 2 - 20;
-		offX = MathHelper.clamp(offX, -xBound, xBound);
-		offY = MathHelper.clamp(offY, -bottomBound, -topBound);
+		offX = Mth.clamp(offX, -xBound, xBound);
+		offY = Mth.clamp(offY, -bottomBound, -topBound);
 
 		int mx = (int) ((mouseX - width / 2) / scale - offX);
 		int my = (int) ((mouseY - height / 2) / scale - offY);
@@ -356,7 +356,7 @@ public class BoMScreen extends Screen {
 	}
 
 	public float getScale() {
-		zoom = MathHelper.clamp(zoom, -6, 4);
+		zoom = Mth.clamp(zoom, -6, 4);
 		int scale = (int) this.client.getWindow().getScaleFactor();
 		int desired = scale + zoom;
 		if (desired < 1) {
@@ -474,7 +474,7 @@ public class BoMScreen extends Screen {
 					if (button == 0) {
 						EmiApi.displayRecipes(hover.stack);
 						RecipeScreen.resolve = hover.stack;
-						MinecraftClient client = MinecraftClient.getInstance();
+						Minecraft client = Minecraft.getInstance();
 						// The first init doesn't realize a resolution exists so we do it again. What
 						// could go wrong.
 						client.currentScreen.init(client.currentScreen.width, client.currentScreen.height);
@@ -488,13 +488,13 @@ public class BoMScreen extends Screen {
 				}
 			}
 		} else if (mode.contains(mx, my)) {
-			MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.ui(SoundEvents.UI_BUTTON_CLICK, 1.0f));
+			Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.ui(SoundEvents.UI_BUTTON_CLICK, 1.0f));
 			BoM.craftingMode = !BoM.craftingMode;
 			recalculateTree();
 		} else if (batches.contains(mx, my) && BoM.tree != null) {
 			long ideal = BoM.tree.cost.getIdealBatch(BoM.tree.goal, 1, 1);
 			if (ideal != BoM.tree.batches) {
-				MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.ui(SoundEvents.UI_BUTTON_CLICK, 1.0f));
+				Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.ui(SoundEvents.UI_BUTTON_CLICK, 1.0f));
 				BoM.tree.batches = ideal;
 				recalculateTree();
 			}
@@ -557,7 +557,7 @@ public class BoMScreen extends Screen {
 
 	@Override
 	public void close() {
-		MinecraftClient.getInstance().setScreen(old);
+		Minecraft.getInstance().setScreen(old);
 	}
 
 	private class Cost {
@@ -578,20 +578,20 @@ public class BoMScreen extends Screen {
 			EmiRenderHelper.renderAmount(context, x, y, getAmountText());
 		}
 
-		public Text getAmountText() {
+		public MutableComponent getAmountText() {
 			long adjusted = cost.getEffectiveAmount();
-			Text totalText;
+			MutableComponent totalText;
 			if (cost instanceof ChanceMaterialCost cmc) {
 				totalText = EmiPort.append(EmiPort.literal("≈"), EmiRenderHelper.getAmountText(cost.ingredient, adjusted))
-					.formatted(Formatting.GOLD);
+					.formatted(ChatFormatting.GOLD);
 			} else {
 				totalText = EmiRenderHelper.getAmountText(cost.ingredient, adjusted);
 			}
 			if (!remainder && BoM.craftingMode) {
 				long amount = alreadyDone;
 				if (amount < adjusted) {
-					Text amountText = amount == 0 ? EmiPort.literal("0") : (EmiRenderHelper.getAmountText(cost.ingredient, amount));
-					MutableText text = EmiPort.append(EmiPort.literal("", Formatting.RED), amountText);
+					MutableComponent amountText = amount == 0 ? EmiPort.literal("0") : (EmiRenderHelper.getAmountText(cost.ingredient, amount));
+					MutableComponent text = EmiPort.append(EmiPort.literal("", ChatFormatting.RED), amountText);
 					text = EmiPort.append(text, EmiPort.literal("/"));
 					text = EmiPort.append(text, totalText);
 					return text;
@@ -759,13 +759,13 @@ public class BoMScreen extends Screen {
 			}
 		}
 
-		public Text getAmountText() {
+		public MutableComponent getAmountText() {
 			if (chance.chanced()) {
 				long a = Math.round(amount * chance.chance());
 				a = Math.max(a, node.amount);
 				return EmiPort.append(EmiPort.literal("≈"),
 						EmiRenderHelper.getAmountText(node.ingredient, a))
-					.formatted(Formatting.GOLD);
+					.formatted(ChatFormatting.GOLD);
 			} else {
 				return EmiRenderHelper.getAmountText(node.ingredient, amount);
 			}

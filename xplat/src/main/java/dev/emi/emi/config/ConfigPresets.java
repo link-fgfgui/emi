@@ -10,8 +10,8 @@ import dev.emi.emi.config.EmiConfig.ConfigGroup;
 import dev.emi.emi.config.EmiConfig.ConfigValue;
 import dev.emi.emi.input.EmiBind;
 import dev.emi.emi.input.EmiInput;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.util.InputUtil;
+import net.minecraft.client.Minecraft;
+import com.mojang.blaze3d.platform.InputConstants;
 
 public class ConfigPresets {
 
@@ -39,7 +39,7 @@ public class ConfigPresets {
 		EmiConfig.leftSidebarTheme = SidebarTheme.MODERN;
 		EmiConfig.leftSidebarHeader = HeaderType.VISIBLE;
 
-		MinecraftClient client = MinecraftClient.getInstance();
+		Minecraft client = Minecraft.getInstance();
 		if (client.getWindow().getScaledHeight() < 260) {
 			EmiConfig.leftSidebarSize.values.set(0, 10);
 			EmiConfig.leftSidebarSize.values.set(1, 8);
@@ -174,10 +174,10 @@ public class ConfigPresets {
 		EmiConfig.craftOne.setToDefault();
 		EmiConfig.craftAll.setBinds();
 		EmiConfig.craftOneToInventory.setBinds(
-			new EmiBind.ModifiedKey(InputUtil.Type.MOUSE.createFromCode(1), EmiInput.SHIFT_MASK)
+			new EmiBind.ModifiedKey(InputConstants.Type.Type.createFromCode(1), EmiInput.SHIFT_MASK)
 		);
 		EmiConfig.craftAllToInventory.setBinds(
-			new EmiBind.ModifiedKey(InputUtil.Type.MOUSE.createFromCode(0), EmiInput.SHIFT_MASK)
+			new EmiBind.ModifiedKey(InputConstants.Type.Type.createFromCode(0), EmiInput.SHIFT_MASK)
 		);
 		EmiConfig.showCraft.setToDefault();
 		EmiConfig.cheatOneToInventory.setToDefault();

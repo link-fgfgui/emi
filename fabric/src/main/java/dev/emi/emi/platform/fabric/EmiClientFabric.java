@@ -17,11 +17,11 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.recipe.v1.sync.ClientRecipeSynchronizedEvent;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketDecoder;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.resource.ResourceType;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamDecoder;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.resources.ResourceLocation;
 
 import org.jspecify.annotations.NonNull;
 
@@ -31,7 +31,7 @@ public class EmiClientFabric implements ClientModInitializer {
 	public void onInitializeClient() {
 		EmiClient.init();
 		EmiData.init(reloader -> {
-			ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(new IdentifiableResourceReloadListener() {
+			ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(new IdentifiableResourceReloadListener() {
 
                 @Override
                 public CompletableFuture<Void> reload(Store store, Executor prepareExecutor,
@@ -45,7 +45,7 @@ public class EmiClientFabric implements ClientModInitializer {
 				}
 
 				@Override
-				public @NonNull Identifier getFabricId() {
+				public @NonNull ResourceLocation getFabricId() {
 					return reloader.getEmiId();
 				}
 			});
@@ -76,7 +76,7 @@ public class EmiClientFabric implements ClientModInitializer {
 		registerPacketReader(EmiNetwork.CHESS, EmiChessPacket.S2C::new);
 	}
 
-	private <T extends EmiPacket> void registerPacketReader(CustomPayload.Id<T> id, PacketDecoder<RegistryByteBuf, T> decode) {
+	private <T extends EmiPacket> void registerPacketReader(CustomPacketPayload.Type<T> id, StreamDecoder<RegistryFriendlyByteBuf, T> decode) {
 		ClientPlayNetworking.registerGlobalReceiver(id, (payload, context) -> {
 			context.client().execute(() -> {
 				payload.apply(context.client().player);

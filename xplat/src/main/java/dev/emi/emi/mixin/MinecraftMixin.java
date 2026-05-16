@@ -14,20 +14,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import dev.emi.emi.platform.EmiClient;
 import dev.emi.emi.runtime.EmiLog;
 import dev.emi.emi.runtime.EmiReloadManager;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 
-@Mixin(MinecraftClient.class)
-public class MinecraftClientMixin {
+@Mixin(Minecraft.class)
+public class MinecraftMixin {
 	@Shadow
-	public ClientWorld world;
+	public ClientLevel level;
 
-	@Inject(at = @At("RETURN"), method = "reloadResources(ZLnet/minecraft/client/MinecraftClient$LoadingContext;)Ljava/util/concurrent/CompletableFuture;")
+	@Inject(at = @At("RETURN"), method = "reloadResourcePacks(ZLnet/minecraft/client/Minecraft$GameLoadCookie;)Ljava/util/concurrent/CompletableFuture;")
 	private void reloadResources(boolean force, @Coerce Object loadingContext, CallbackInfoReturnable<CompletableFuture<Void>> info) {
 		CompletableFuture<Void> future = info.getReturnValue();
 		if (future != null) {
 			future.thenRunAsync(() -> {
-				MinecraftClient client = MinecraftClient.getInstance();
+				Minecraft client = Minecraft.getInstance();
 				if (client.world != null && client.world.getRecipeManager() != null) {
 					EmiReloadManager.reload();
 				}
@@ -35,7 +35,8 @@ public class MinecraftClientMixin {
 		}
 	}
 
-	@Inject(at = @At("HEAD"), method = "disconnect(Lnet/minecraft/client/gui/screen/Screen;ZZ)V")
+	// TODO(Ravel): target method disconnect with the signature not found
+    @Inject(at = @At("HEAD"), method = "disconnect(Lnet/minecraft/client/gui/screen/Screen;ZZ)V")
 	private void disconnect(CallbackInfo info) {
 		EmiLog.info("Disconnecting from server, EMI data cleared");
 		EmiReloadManager.clear();

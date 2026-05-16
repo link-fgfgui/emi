@@ -6,15 +6,15 @@ import java.util.function.Supplier;
 import dev.emi.emi.EmiPort;
 import dev.emi.emi.config.ScreenAlign;
 import dev.emi.emi.screen.ConfigScreen.Mutator;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.Component;
 
 public class ScreenAlignWidget extends ConfigEntryWidget {
 	private final Mutator<ScreenAlign> mutator;
-	private ButtonWidget horizontal, vertical;
+	private Button horizontal, vertical;
 
-	public ScreenAlignWidget(Text name, List<TooltipComponent> tooltip, Supplier<String> search, Mutator<ScreenAlign> mutator) {
+	public ScreenAlignWidget(Component name, List<ClientTooltipComponent> tooltip, Supplier<String> search, Mutator<ScreenAlign> mutator) {
 		super(name, tooltip, search, 20);
 		this.mutator = mutator;
 
@@ -33,11 +33,11 @@ public class ScreenAlignWidget extends ConfigEntryWidget {
 		this.setChildren(List.of(horizontal, vertical));
 	}
 
-	public Text getHorizontalText() {
+	public Component getHorizontalText() {
 		return mutator.get().horizontal.getText();
 	}
 
-	public Text getVerticalText() {
+	public Component getVerticalText() {
 		return mutator.get().vertical.getText();
 	}
 

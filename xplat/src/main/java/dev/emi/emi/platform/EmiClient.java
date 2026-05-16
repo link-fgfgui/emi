@@ -11,23 +11,23 @@ import dev.emi.emi.api.recipe.handler.StandardRecipeHandler;
 import dev.emi.emi.config.EmiConfig;
 import dev.emi.emi.network.EmiNetwork;
 import dev.emi.emi.network.FillRecipeC2SPacket;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.item.ItemConvertible;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.Slot;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
 
 public class EmiClient {
-	public static final Map<Consumer<ItemUsageContext>, List<ItemConvertible>> HOE_ACTIONS = Maps.newHashMap();
+	public static final Map<Consumer<UseOnContext>, List<ItemLike>> HOE_ACTIONS = Maps.newHashMap();
 	public static boolean onServer = false;
 
 	public static void init() {
 		EmiConfig.loadConfig();
 	}
 
-	public static <T extends ScreenHandler> void sendFillRecipe(StandardRecipeHandler<T> handler, HandledScreen<T> screen,
-			int syncId, int action, List<ItemStack> stacks, EmiRecipe recipe) {
+	public static <T extends AbstractContainerMenu> void sendFillRecipe(StandardRecipeHandler<T> handler, AbstractContainerScreen<T> screen,
+                                                                        int syncId, int action, List<ItemStack> stacks, EmiRecipe recipe) {
 		T screenHandler = screen.getScreenHandler();
 		List<Slot> crafting = handler.getCraftingSlots(recipe, screenHandler);
 		Slot output = handler.getOutputSlot(screenHandler);

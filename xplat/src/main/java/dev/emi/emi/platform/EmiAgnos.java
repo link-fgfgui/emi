@@ -13,21 +13,21 @@ import dev.emi.emi.api.stack.FluidEmiStack;
 import dev.emi.emi.registry.EmiPluginContainer;
 import dev.emi.emi.runtime.EmiDrawContext;
 
-import net.minecraft.client.gui.tooltip.TooltipComponent;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.render.item.model.ItemModel;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Recipe;
-import net.minecraft.recipe.RecipeEntry;
-import net.minecraft.recipe.RecipeManager;
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.recipe.input.RecipeInput;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.RecipeInput;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 
 public abstract class EmiAgnos {
 	public static EmiAgnos delegate;
@@ -107,23 +107,23 @@ public abstract class EmiAgnos {
 
 	protected abstract void addBrewingRecipesAgnos(EmiRegistry registry);
 
-	public static List<TooltipComponent> getItemTooltip(ItemStack stack) {
+	public static List<ClientTooltipComponent> getItemTooltip(ItemStack stack) {
 		return delegate.getItemTooltipAgnos(stack);
 	}
 
-	protected abstract List<TooltipComponent> getItemTooltipAgnos(ItemStack stack);
+	protected abstract List<ClientTooltipComponent> getItemTooltipAgnos(ItemStack stack);
 
-	public static Text getFluidName(Fluid fluid, ComponentChanges componentChanges) {
+	public static Component getFluidName(Fluid fluid, DataComponentPatch componentChanges) {
 		return delegate.getFluidNameAgnos(fluid, componentChanges);
 	}
 
-	protected abstract Text getFluidNameAgnos(Fluid fluid, ComponentChanges componentChanges);
+	protected abstract Component getFluidNameAgnos(Fluid fluid, DataComponentPatch componentChanges);
 
-	public static List<Text> getFluidTooltip(Fluid fluid, ComponentChanges componentChanges) {
+	public static List<Component> getFluidTooltip(Fluid fluid, DataComponentPatch componentChanges) {
 		return delegate.getFluidTooltipAgnos(fluid, componentChanges);
 	}
 
-	protected abstract List<Text> getFluidTooltipAgnos(Fluid fluid, ComponentChanges componentChanges);
+	protected abstract List<Component> getFluidTooltipAgnos(Fluid fluid, DataComponentPatch componentChanges);
 
 	public static boolean isFloatyFluid(FluidEmiStack stack) {
 		return delegate.isFloatyFluidAgnos(stack);
@@ -159,11 +159,11 @@ public abstract class EmiAgnos {
 
 	protected abstract Map<Item, Integer> getFuelMapAgnos();
 
-	public static ItemModel getBakedTagModel(Identifier id) {
+	public static ItemModel getBakedTagModel(ResourceLocation id) {
 		return delegate.getBakedTagModelAgnos(id);
 	}
 
-	protected abstract ItemModel getBakedTagModelAgnos(Identifier id);
+	protected abstract ItemModel getBakedTagModelAgnos(ResourceLocation id);
 
 	public static boolean isEnchantable(ItemStack stack, Enchantment enchantment) {
 		return delegate.isEnchantableAgnos(stack, enchantment);
@@ -171,33 +171,33 @@ public abstract class EmiAgnos {
 
 	protected abstract boolean isEnchantableAgnos(ItemStack stack, Enchantment enchantment);
 
-    public static <I extends RecipeInput, T extends Recipe<I>> Collection<RecipeEntry<T>> getAllRecipesOfType(RecipeManager recipeManager, RecipeType<T> recipeType) {
+    public static <I extends RecipeInput, T extends Recipe<I>> Collection<RecipeHolder<T>> getAllRecipesOfType(RecipeManager recipeManager, RecipeType<T> recipeType) {
         return delegate.getAllRecipesOfTypeAgnos(recipeManager, recipeType);
     }
 
-    protected abstract <I extends RecipeInput, T extends Recipe<I>> Collection<RecipeEntry<T>> getAllRecipesOfTypeAgnos(RecipeManager recipeManager, RecipeType<T> recipeType);
+    protected abstract <I extends RecipeInput, T extends Recipe<I>> Collection<RecipeHolder<T>> getAllRecipesOfTypeAgnos(RecipeManager recipeManager, RecipeType<T> recipeType);
 
-    public static <I extends RecipeInput, T extends Recipe<I>> Stream<RecipeEntry<T>> getAllMatchesRecipe(RecipeManager recipeManager, RecipeType<T> recipeType, I input, World world) {
+    public static <I extends RecipeInput, T extends Recipe<I>> Stream<RecipeHolder<T>> getAllMatchesRecipe(RecipeManager recipeManager, RecipeType<T> recipeType, I input, Level world) {
         return delegate.getAllMatchesRecipeAgnos(recipeManager, recipeType, input, world);
     }
 
-    protected abstract <I extends RecipeInput, T extends Recipe<I>> Stream<RecipeEntry<T>> getAllMatchesRecipeAgnos(RecipeManager recipeManager, RecipeType<T> recipeType, I input, World world);
+    protected abstract <I extends RecipeInput, T extends Recipe<I>> Stream<RecipeHolder<T>> getAllMatchesRecipeAgnos(RecipeManager recipeManager, RecipeType<T> recipeType, I input, Level world);
 
-    public static <I extends RecipeInput, T extends Recipe<I>> Optional<RecipeEntry<T>> getFirstMatchRecipe(RecipeManager recipeManager, RecipeType<T> recipeType, I input, World world) {
+    public static <I extends RecipeInput, T extends Recipe<I>> Optional<RecipeHolder<T>> getFirstMatchRecipe(RecipeManager recipeManager, RecipeType<T> recipeType, I input, Level world) {
         return delegate.getFirstMatchRecipeAgnos(recipeManager, recipeType, input, world);
     }
 
-    protected abstract <I extends RecipeInput, T extends Recipe<I>> Optional<RecipeEntry<T>> getFirstMatchRecipeAgnos(RecipeManager recipeManager, RecipeType<T> recipeType, I input, World world);
+    protected abstract <I extends RecipeInput, T extends Recipe<I>> Optional<RecipeHolder<T>> getFirstMatchRecipeAgnos(RecipeManager recipeManager, RecipeType<T> recipeType, I input, Level world);
 
-    public static Collection<RecipeEntry<?>> listAllRecipes(RecipeManager recipeManager) {
+    public static Collection<RecipeHolder<?>> listAllRecipes(RecipeManager recipeManager) {
         return delegate.getAllRecipesAgnos(recipeManager);
     }
 
-    protected abstract Collection<RecipeEntry<?>> getAllRecipesAgnos(RecipeManager recipeManager);
+    protected abstract Collection<RecipeHolder<?>> getAllRecipesAgnos(RecipeManager recipeManager);
 
-    public static RecipeEntry<?> getRecipe(RecipeManager recipeManager, Identifier id) {
+    public static RecipeHolder<?> getRecipe(RecipeManager recipeManager, ResourceLocation id) {
         return delegate.getRecipeAgnos(recipeManager, id);
     }
 
-    protected abstract RecipeEntry<?> getRecipeAgnos(RecipeManager recipeManager, Identifier id);
+    protected abstract RecipeHolder<?> getRecipeAgnos(RecipeManager recipeManager, ResourceLocation id);
 }

@@ -3,20 +3,20 @@ package dev.emi.emi.network;
 import java.util.List;
 import java.util.function.Consumer;
 
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.core.Holder;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
 
 import dev.emi.emi.runtime.EmiLog;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.util.Identifier;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.resources.ResourceLocation;
 
 public class FillRecipeC2SPacket implements EmiPacket {
 	private final int syncId;
@@ -25,7 +25,7 @@ public class FillRecipeC2SPacket implements EmiPacket {
 	private final int output;
 	private final List<ItemStack> stacks;
 
-	public FillRecipeC2SPacket(ScreenHandler handler, int action, List<Slot> slots, List<Slot> crafting, @Nullable Slot output, List<ItemStack> stacks) {
+	public FillRecipeC2SPacket(AbstractContainerMenu handler, int action, List<Slot> slots, List<Slot> crafting, @Nullable Slot output, List<ItemStack> stacks) {
 		this.syncId = handler.syncId;
 		this.action = action;
 		this.slots = slots.stream().map(s -> s == null ? -1 : s.id).toList();
@@ -34,7 +34,7 @@ public class FillRecipeC2SPacket implements EmiPacket {
 		this.stacks = stacks;
 	}
 
-	public FillRecipeC2SPacket(RegistryByteBuf buf) {
+	public FillRecipeC2SPacket(RegistryFriendlyByteBuf buf) {
 		syncId = buf.readInt();
 		action = buf.readByte();
 		slots = parseCompressedSlots(buf);
@@ -57,7 +57,7 @@ public class FillRecipeC2SPacket implements EmiPacket {
 	}
 
 	@Override
-	public void write(RegistryByteBuf buf) {
+	public void write(RegistryFriendlyByteBuf buf) {
 		buf.writeInt(syncId);
 		buf.writeByte(action);
 		writeCompressedSlots(slots, buf);
@@ -78,12 +78,12 @@ public class FillRecipeC2SPacket implements EmiPacket {
 	}
 
 	@Override
-	public void apply(PlayerEntity player) {
+	public void apply(Player player) {
 		if (slots == null || crafting == null) {
 			EmiLog.error("Client requested fill but passed input and crafting slot information was invalid, aborting");
 			return;
 		}
-		ScreenHandler handler = player.currentScreenHandler;
+		AbstractContainerMenu handler = player.currentScreenHandler;
 		if (handler == null || handler.syncId != syncId) {
 			EmiLog.warn("Client requested fill but screen handler has changed, aborting");
 			return;
@@ -156,9 +156,9 @@ public class FillRecipeC2SPacket implements EmiPacket {
 				}
 				if (output != null) {
 					if (action == 1) {
-						handler.onSlotClick(output.getIndex(), 0, SlotActionType.PICKUP, player);
+						handler.onSlotClick(output.getIndex(), 0, ClickType.PICKUP, player);
 					} else if (action == 2) {
-						handler.onSlotClick(output.getIndex(), 0, SlotActionType.QUICK_MOVE, player);
+						handler.onSlotClick(output.getIndex(), 0, ClickType.QUICK_MOVE, player);
 					}
 				}
 			} finally {
@@ -169,7 +169,7 @@ public class FillRecipeC2SPacket implements EmiPacket {
 		}
 	}
 
-	private static List<Integer> parseCompressedSlots(PacketByteBuf buf) {
+	private static List<Integer> parseCompressedSlots(FriendlyByteBuf buf) {
 		List<Integer> list = Lists.newArrayList();
 		int amount = buf.readVarInt();
 		for (int i = 0; i < amount; i++) {
@@ -185,8 +185,8 @@ public class FillRecipeC2SPacket implements EmiPacket {
 		return list;
 	}
 	
-	private static void writeCompressedSlots(List<Integer> list, PacketByteBuf buf) {
-		List<Consumer<PacketByteBuf>> postWrite = Lists.newArrayList();
+	private static void writeCompressedSlots(List<Integer> list, FriendlyByteBuf buf) {
+		List<Consumer<FriendlyByteBuf>> postWrite = Lists.newArrayList();
 		int groups = 0;
 		int i = 0;
 		while (i < list.size()) {
@@ -203,12 +203,12 @@ public class FillRecipeC2SPacket implements EmiPacket {
 			});
 		}
 		buf.writeVarInt(groups);
-		for (Consumer<PacketByteBuf> consumer : postWrite) {
+		for (Consumer<FriendlyByteBuf> consumer : postWrite) {
 			consumer.accept(buf);
 		}
 	}
 
-	private static int grabMatching(PlayerEntity player, List<Slot> slots, List<ItemStack> rubble, List<Slot> crafting, ItemStack stack) {
+	private static int grabMatching(Player player, List<Slot> slots, List<ItemStack> rubble, List<Slot> crafting, ItemStack stack) {
 		int amount = stack.getCount();
 		int grabbed = 0;
 		for (int i = 0; i < rubble.size(); i++) {

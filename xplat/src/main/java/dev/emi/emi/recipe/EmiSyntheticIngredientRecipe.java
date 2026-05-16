@@ -9,7 +9,7 @@ import dev.emi.emi.api.recipe.EmiRecipeCategory;
 import dev.emi.emi.api.recipe.EmiResolutionRecipe;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public class EmiSyntheticIngredientRecipe extends EmiIngredientRecipe {
 	private final EmiIngredient ingredient;
@@ -39,7 +39,7 @@ public class EmiSyntheticIngredientRecipe extends EmiIngredientRecipe {
 	}
 
 	@Override
-	public Identifier getId() {
+	public ResourceLocation getId() {
 		return null;
 	}
 }

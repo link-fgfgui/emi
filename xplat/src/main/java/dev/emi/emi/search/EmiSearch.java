@@ -22,16 +22,16 @@ import dev.emi.emi.registry.EmiStackList;
 import dev.emi.emi.runtime.EmiLog;
 import dev.emi.emi.runtime.EmiReloadLog;
 import dev.emi.emi.screen.EmiScreenManager;
-import net.minecraft.client.resource.language.I18n;
-import net.minecraft.client.search.SuffixArray;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ItemEnchantmentsComponent;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.item.Items;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.client.searchtree.SuffixArray;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.Items;
+import net.minecraft.core.Holder;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 public class EmiSearch {
 	public static final Pattern TOKENS = Pattern.compile(
@@ -67,28 +67,28 @@ public class EmiSearch {
 			try {
 				SearchStack searchStack = new SearchStack(stack);
 				bakedStacks.add(stack);
-				Text name = NameQuery.getText(stack);
+				Component name = NameQuery.getText(stack);
 				if (name != null) {
 					names.add(searchStack, name.getString().toLowerCase());
 				}
-				List<Text> tooltip = stack.getTooltipText();
+				List<Component> tooltip = stack.getTooltipText();
 				if (tooltip != null) {
 					for (int i = 1; i < tooltip.size(); i++) {
-						Text text = tooltip.get(i);
+						Component text = tooltip.get(i);
 						if (text != null) {
 							tooltips.add(searchStack, text.getString().toLowerCase());
 						}
 					}
 				}
-				Identifier id = stack.getId();
+				ResourceLocation id = stack.getId();
 				if (id != null) {
 					mods.add(searchStack, EmiUtil.getModName(id.getNamespace()).toLowerCase());
 					mods.add(searchStack, id.getNamespace().toLowerCase());
 					names.add(searchStack, id.getPath().toLowerCase());
 				}
 				if (stack.getItemStack().getItem() == Items.ENCHANTED_BOOK) {
-					for (RegistryEntry<Enchantment> e : stack.getOrDefault(DataComponentTypes.ENCHANTMENTS, ItemEnchantmentsComponent.DEFAULT).getEnchantments()) {
-						Identifier eid = EmiPort.getEnchantmentRegistry().getId(e.value());
+					for (Holder<Enchantment> e : stack.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.DEFAULT).getEnchantments()) {
+						ResourceLocation eid = EmiPort.getEnchantmentRegistry().getId(e.value());
 						if (eid != null && !eid.getNamespace().equals("minecraft")) {
 							mods.add(searchStack, EmiUtil.getModName(eid.getNamespace()).toLowerCase());
 						}
@@ -113,7 +113,7 @@ public class EmiSearch {
 			}
 		}
 		for (EmiAlias.Baked alias : EmiStackList.registryAliases) {
-			for (Text text : alias.text()) {
+			for (Component text : alias.text()) {
 				for (EmiIngredient ing : alias.stacks()) {
 					for (EmiStack stack : ing.getEmiStacks()) {
 						aliases.add(stack.copy().comparison(EmiPort.compareStrict()), text.getString().toLowerCase());

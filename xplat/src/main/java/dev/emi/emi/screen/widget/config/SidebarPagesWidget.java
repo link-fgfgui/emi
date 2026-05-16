@@ -9,15 +9,15 @@ import dev.emi.emi.EmiPort;
 import dev.emi.emi.config.SidebarPages;
 import dev.emi.emi.config.SidebarType;
 import dev.emi.emi.screen.ConfigScreen.Mutator;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.Component;
 
 public class SidebarPagesWidget extends ConfigEntryWidget {
-	private List<ButtonWidget> buttons = Lists.newArrayList();
+	private List<Button> buttons = Lists.newArrayList();
 	private Mutator<SidebarPages> mutator;
 
-	public SidebarPagesWidget(Text name, List<TooltipComponent> tooltip, Supplier<String> search, Mutator<SidebarPages> mutator) {
+	public SidebarPagesWidget(Component name, List<ClientTooltipComponent> tooltip, Supplier<String> search, Mutator<SidebarPages> mutator) {
 		super(name, tooltip, search, 0);
 		this.mutator = mutator;
 		setChildren(buttons);
@@ -49,12 +49,12 @@ public class SidebarPagesWidget extends ConfigEntryWidget {
 	public void update(int y, int x, int width, int height) {
 		int h = 0;
 		for (int i = 0; i < buttons.size() - 1; i++) {
-			ButtonWidget button = buttons.get(i);
+			Button button = buttons.get(i);
 			button.x = x + width - 218;
 			button.y = y + h;
 			h += 24;
 		}
-		ButtonWidget button = buttons.get(buttons.size() - 1);
+		Button button = buttons.get(buttons.size() - 1);
 		button.x = x + width - 20;
 		button.y = y;
 	}

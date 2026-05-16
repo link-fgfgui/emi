@@ -38,12 +38,12 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.resource.language.I18n;
-import net.minecraft.recipe.Recipe;
-import net.minecraft.recipe.RecipeEntry;
-import net.minecraft.recipe.RecipeManager;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.resources.ResourceLocation;
 
 public class EmiRecipes {
 	public static volatile Worker activeWorker = null;
@@ -58,7 +58,7 @@ public class EmiRecipes {
 	public static Map<EmiStack, List<EmiRecipe>> byWorkstation = Maps.newHashMap();
 	public static List<EmiRecipeDecorator> decorators = Lists.newArrayList();
 
-	public static Map<Recipe<?>, Identifier> recipeIds = Map.of();
+	public static Map<Recipe<?>, ResourceLocation> recipeIds = Map.of();
 	
 	public static void clear() {
 		setWorker(null);
@@ -70,12 +70,12 @@ public class EmiRecipes {
 		byWorkstation.clear();
 		decorators.clear();
 		manager = Manager.EMPTY;
-		MinecraftClient client = MinecraftClient.getInstance();
+		Minecraft client = Minecraft.getInstance();
 		if (client.world != null) {
 			RecipeManager manager = client.world.getRecipeManager();
 			recipeIds = new Reference2ObjectOpenHashMap<>();
 			if (manager != null) {
-				for (RecipeEntry<?> entry : EmiAgnos.listAllRecipes(manager)) {
+				for (RecipeHolder<?> entry : EmiAgnos.listAllRecipes(manager)) {
 					recipeIds.put(entry.value(), entry.id().getValue());
 				}
 			}
@@ -144,7 +144,7 @@ public class EmiRecipes {
 		private Map<EmiStack, List<EmiRecipe>> byInput = new Object2ObjectOpenCustomHashMap<>(new EmiStackList.ComparisonHashStrategy());
 		private Map<EmiStack, List<EmiRecipe>> byOutput = new Object2ObjectOpenCustomHashMap<>(new EmiStackList.ComparisonHashStrategy());
 		private Map<EmiRecipeCategory, List<EmiRecipe>> byCategory = Maps.newHashMap();
-		private Map<Identifier, EmiRecipe> byId = Maps.newHashMap();
+		private Map<ResourceLocation, EmiRecipe> byId = Maps.newHashMap();
 
 		private Manager() {
 			this.categories = List.of();
@@ -157,10 +157,10 @@ public class EmiRecipes {
 			this.workstations = workstations;
 			this.recipes = List.copyOf(recipes);
 	
-			Object2IntMap<Identifier> duplicateIds = new Object2IntOpenHashMap<>();
-			Set<Identifier> incorrectIds = new ObjectArraySet<>();
+			Object2IntMap<ResourceLocation> duplicateIds = new Object2IntOpenHashMap<>();
+			Set<ResourceLocation> incorrectIds = new ObjectArraySet<>();
 			for (EmiRecipe recipe : recipes) {
-				Identifier id = recipe.getId();
+				ResourceLocation id = recipe.getId();
 				EmiRecipeCategory category = recipe.getCategory();
 				if (!categories.contains(category)) {
 					EmiReloadLog.warn("Recipe " + id + " loaded with unregistered category: " + category.getId());
@@ -189,10 +189,10 @@ public class EmiRecipes {
 			}
 	
 			if (EmiConfig.devMode) {
-				for (Identifier id : duplicateIds.keySet()) {
+				for (ResourceLocation id : duplicateIds.keySet()) {
 					EmiReloadLog.warn(duplicateIds.getInt(id) + " recipes loaded with the same id: " + id);
 				}
-				for (Identifier id : incorrectIds) {
+				for (ResourceLocation id : incorrectIds) {
 					EmiReloadLog.warn("Recipe " + id + " not present in recipe manager. Consider prefixing its path with '/' if it is synthetic.");
 				}
 			}
@@ -283,7 +283,7 @@ public class EmiRecipes {
 		}
 
 		@Override
-		public @Nullable EmiRecipe getRecipe(Identifier id) {
+		public @Nullable EmiRecipe getRecipe(ResourceLocation id) {
 			return byId.getOrDefault(id, null);
 		}
 

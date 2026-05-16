@@ -10,14 +10,14 @@ import dev.emi.emi.EmiRenderHelper;
 import dev.emi.emi.runtime.EmiDrawContext;
 import dev.emi.emi.screen.widget.config.EmiNameWidget;
 import dev.emi.emi.screen.widget.config.ListWidget;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.input.KeyInput;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 public class ConfigEnumScreen<T> extends Screen {
 	private final ConfigScreen last;
@@ -64,7 +64,7 @@ public class ConfigEnumScreen<T> extends Screen {
 
 	@Override
 	public void close() {
-		MinecraftClient.getInstance().setScreen(last);
+		Minecraft.getInstance().setScreen(last);
 	}
 
     @Override
@@ -81,12 +81,12 @@ public class ConfigEnumScreen<T> extends Screen {
 		return super.keyPressed(input);
 	}
 
-	public static record Entry<T>(T value, Text name, List<TooltipComponent> tooltip) {
+	public static record Entry<T>(T value, Component name, List<ClientTooltipComponent> tooltip) {
 	}
 
 	public static class SelectionWidget<T> extends ListWidget.Entry {
-		private final ButtonWidget button;
-		private final List<TooltipComponent> tooltip;
+		private final Button button;
+		private final List<ClientTooltipComponent> tooltip;
 
 		public SelectionWidget(ConfigEnumScreen<T> screen, Entry<T> e) {
 			button = EmiPort.newButton(0, 0, 200, 20, e.name(), t -> {
@@ -97,7 +97,7 @@ public class ConfigEnumScreen<T> extends Screen {
 		}
 
 		@Override
-		public List<? extends Element> children() {
+		public List<? extends GuiEventListener> children() {
 			return List.of(button);
 		}
 

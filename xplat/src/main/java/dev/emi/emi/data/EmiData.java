@@ -24,9 +24,9 @@ import dev.emi.emi.api.render.EmiTexture;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.stack.serializer.EmiIngredientSerializer;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.GsonHelper;
 
 public class EmiData {
 	public static Map<String, EmiRecipeCategoryProperties> categoryPriorities = Map.of();
@@ -43,30 +43,30 @@ public class EmiData {
 				EmiPort.id("emi:category_properties"), "category/properties", Maps::newHashMap,
 				(map, json, id) -> {
 					for (String k : json.keySet()) {
-						if (JsonHelper.hasJsonObject(json, k)) {
+						if (GsonHelper.hasJsonObject(json, k)) {
 							EmiRecipeCategoryProperties props = map.computeIfAbsent(k, s -> new EmiRecipeCategoryProperties());
 							JsonObject val = json.getAsJsonObject(k);
-							if (JsonHelper.hasNumber(val, "order")) {
+							if (GsonHelper.hasNumber(val, "order")) {
 								props.order = val.get("order").getAsInt();
 							}
-							if (JsonHelper.hasJsonObject(val, "icon")) {
+							if (GsonHelper.hasJsonObject(val, "icon")) {
 								JsonObject icon = val.getAsJsonObject("icon");
-								if (JsonHelper.hasString(icon, "texture")) {
-									props.icon = () -> new EmiTexture(EmiPort.id(JsonHelper.getString(icon, "texture")), 0, 0, 16, 16, 16, 16, 16, 16);
-								} else if (JsonHelper.hasString(icon, "stack")) {
+								if (GsonHelper.hasString(icon, "texture")) {
+									props.icon = () -> new EmiTexture(EmiPort.id(GsonHelper.getString(icon, "texture")), 0, 0, 16, 16, 16, 16, 16, 16);
+								} else if (GsonHelper.hasString(icon, "stack")) {
 									props.icon = () -> EmiIngredientSerializer.getDeserialized(icon.get("stack"));
 								}
 							}
-							if (JsonHelper.hasJsonObject(val, "simplified_icon")) {
+							if (GsonHelper.hasJsonObject(val, "simplified_icon")) {
 								JsonObject icon = val.getAsJsonObject("simplified_icon");
-								if (JsonHelper.hasString(icon, "texture")) {
-									props.simplified = () -> new EmiTexture(EmiPort.id(JsonHelper.getString(icon, "texture")), 0, 0, 16, 16, 16, 16, 16, 16);
-								} else if (JsonHelper.hasString(icon, "stack")) {
+								if (GsonHelper.hasString(icon, "texture")) {
+									props.simplified = () -> new EmiTexture(EmiPort.id(GsonHelper.getString(icon, "texture")), 0, 0, 16, 16, 16, 16, 16, 16);
+								} else if (GsonHelper.hasString(icon, "stack")) {
 									props.simplified = () -> EmiIngredientSerializer.getDeserialized(icon.get("stack"));
 								}
 							}
-							if (JsonHelper.hasString(val, "sort")) {
-								switch (JsonHelper.getString(val, "sort")) {
+							if (GsonHelper.hasString(val, "sort")) {
+								switch (GsonHelper.getString(val, "sort")) {
 									case "none":
 										props.sort = EmiRecipeSorting.none();
 										break;
@@ -88,13 +88,13 @@ public class EmiData {
 			new EmiDataLoader<List<Predicate<EmiRecipe>>>(
 				EmiPort.id("emi:recipe_filters"), "recipe/filters", Lists::newArrayList,
 				(list, json, oid) -> {
-					JsonArray arr = JsonHelper.getArray(json, "filters", new JsonArray());
+					JsonArray arr = GsonHelper.getArray(json, "filters", new JsonArray());
 					for (JsonElement el : arr) {
 						if (el.isJsonObject()) {
 							JsonObject obj = el.getAsJsonObject();
 							List<Predicate<EmiRecipe>> predicates = Lists.newArrayList();
-							if (JsonHelper.hasString(obj, "id")) {
-								String id = JsonHelper.getString(obj, "id");
+							if (GsonHelper.hasString(obj, "id")) {
+								String id = GsonHelper.getString(obj, "id");
 								if (id.startsWith("/") && id.endsWith("/")) {
 									Pattern pat = Pattern.compile(id.substring(1, id.length() - 1));
 									predicates.add(r -> {
@@ -108,8 +108,8 @@ public class EmiData {
 									});
 								}
 							}
-							if (JsonHelper.hasString(obj, "category")) {
-								String id = JsonHelper.getString(obj, "category");
+							if (GsonHelper.hasString(obj, "category")) {
+								String id = GsonHelper.getString(obj, "category");
 								if (id.startsWith("/") && id.endsWith("/")) {
 									Pattern pat = Pattern.compile(id.substring(1, id.length() - 1));
 									predicates.add(r -> {
@@ -143,7 +143,7 @@ public class EmiData {
 					List<IndexStackData.Added> added = Lists.newArrayList();
 					List<EmiIngredient> removed = Lists.newArrayList();
 					List<IndexStackData.Filter> filters = Lists.newArrayList();
-					if (JsonHelper.hasArray(json, "added")) {
+					if (GsonHelper.hasArray(json, "added")) {
 						for (JsonElement el : json.getAsJsonArray("added")) {
 							if (el.isJsonObject()) {
 								JsonObject obj = el.getAsJsonObject();
@@ -156,14 +156,14 @@ public class EmiData {
 							}
 						}
 					}
-					if (JsonHelper.hasArray(json, "removed")) {
+					if (GsonHelper.hasArray(json, "removed")) {
 						for (JsonElement el : json.getAsJsonArray("removed")) {
 							removed.add(EmiIngredientSerializer.getDeserialized(el));
 						}
 					}
-					if (JsonHelper.hasArray(json, "filters")) {
+					if (GsonHelper.hasArray(json, "filters")) {
 						for (JsonElement el : json.getAsJsonArray("filters")) {
-							if (JsonHelper.isString(el)) {
+							if (GsonHelper.isString(el)) {
 								String id = el.getAsString();
 								if (id.startsWith("/") && id.endsWith("/")) {
 									Pattern pat = Pattern.compile(id.substring(1, id.length() - 1));
@@ -174,14 +174,14 @@ public class EmiData {
 							}
 						}
 					}
-					boolean disable = JsonHelper.getBoolean(json, "disable", false);
+					boolean disable = GsonHelper.getBoolean(json, "disable", false);
 					return new IndexStackData(disable, added, removed, filters);
 				}), list -> stackData = list));
 		register.accept(
 			new EmiDataLoader<List<Supplier<EmiAlias>>>(
 				EmiPort.id("emi:aliases"), "aliases", Lists::newArrayList,
 				(list, json, id) -> {
-					if (JsonHelper.hasArray(json, "aliases")) {
+					if (GsonHelper.hasArray(json, "aliases")) {
 						for (JsonElement el : json.getAsJsonArray("aliases")) {
 							if (el.isJsonObject()) {
 								JsonObject obj = el.getAsJsonObject();
@@ -196,11 +196,11 @@ public class EmiData {
 			new EmiDataLoader<List<Supplier<EmiRecipe>>>(
 				EmiPort.id("emi:recipe_additions"), "recipe/additions", Lists::newArrayList,
 				(list, json, oid) -> {
-					String s = JsonHelper.getString(json, "type", "");
-					Identifier id = EmiPort.id("emi:/generated/" + oid.getPath());
+					String s = GsonHelper.getString(json, "type", "");
+					ResourceLocation id = EmiPort.id("emi:/generated/" + oid.getPath());
 					if (s.equals("emi:info")) {
 						list.add(() -> new EmiInfoRecipe(getArrayOrSingleton(json, "stacks").map(EmiIngredientSerializer::getDeserialized).toList(),
-							getArrayOrSingleton(json, "text").map(t -> (Text) EmiPort.translatable(t.getAsString())).toList(),
+							getArrayOrSingleton(json, "text").map(t -> (Component) EmiPort.translatable(t.getAsString())).toList(),
 							id));
 					} else if (s.equals("emi:world_interaction")) {
 						list.add(() -> {
@@ -222,7 +222,7 @@ public class EmiData {
 	}
 
 	private static Stream<JsonElement> getArrayOrSingleton(JsonObject json, String key) {
-		if (JsonHelper.hasArray(json, key)) {
+		if (GsonHelper.hasArray(json, key)) {
 			return StreamSupport.stream(json.getAsJsonArray(key).spliterator(), false);
 		}
 		return Stream.of(json.get(key));

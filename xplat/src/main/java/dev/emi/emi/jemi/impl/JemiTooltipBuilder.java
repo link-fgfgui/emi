@@ -11,33 +11,33 @@ import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.ingredients.ITypedIngredient;
 import mezz.jei.api.runtime.IJeiKeyMapping;
 
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.item.tooltip.TooltipData;
-import net.minecraft.text.StringVisitable;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.Component;
 
 public class JemiTooltipBuilder implements ITooltipBuilder {
-	public final List<TooltipComponent> tooltip = Lists.newArrayList();
+	public final List<ClientTooltipComponent> tooltip = Lists.newArrayList();
 
 	@Override
-	public void add(StringVisitable component) {
+	public void add(FormattedText component) {
 		// JEI allows non-text StringVisitable... Minecraft's methods don't easily
-		if (component instanceof Text text) {
-			tooltip.add(TooltipComponent.of(text.asOrderedText()));
+		if (component instanceof Component text) {
+			tooltip.add(ClientTooltipComponent.of(text.asOrderedText()));
 		}
 	}
 
 	@Override
-	public void addAll(Collection<? extends StringVisitable> components) {
-		for (StringVisitable v : components) {
+	public void addAll(Collection<? extends FormattedText> components) {
+		for (FormattedText v : components) {
 			add(v);
 		}
 	}
 
 	@Override
-	public void add(TooltipData data) {
+	public void add(TooltipComponent data) {
 		try {
-			tooltip.add(TooltipComponent.of(data));
+			tooltip.add(ClientTooltipComponent.of(data));
 		} catch (Exception e) {
 			EmiLog.error("Error converting TooltipComponent", e);
 		}
@@ -64,7 +64,7 @@ public class JemiTooltipBuilder implements ITooltipBuilder {
     }
 
     @Override
-    public List<Either<StringVisitable, TooltipData>> getLines() {
+    public List<Either<FormattedText, TooltipComponent>> getLines() {
         return List.of();
     }
 
