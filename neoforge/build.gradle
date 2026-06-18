@@ -73,25 +73,6 @@ dependencies {
 
 	common(project(path: ":xplat")) { transitive = false }
 	shadowCommon(project(path: ":xplat", configuration: "transformProductionNeoForge")) { transitive = false }
-
-	localRuntime "curse.maven:jei-238222:8014757"
-	localRuntime "curse.maven:refined-storage-243076:8086589"
-	localRuntime "curse.maven:applied-energistics-2-223794:8059221"
-	localRuntime "curse.maven:guideme-1173950:7929350"
-	localRuntime "curse.maven:cooking-for-blockheads-231484:8091670"
-	localRuntime "curse.maven:balm-531761:8056289"
-	localRuntime "curse.maven:energized-power-782147:8088376"
-	localRuntime "curse.maven:just-dire-things-1002348:8042519"
-	localRuntime "curse.maven:inventory-essentials-368825:8019395"
-	localRuntime "curse.maven:jade-324717:8068368"
-	localRuntime "curse.maven:logistics-network-1448257:8087737"
-	localRuntime "curse.maven:pipez-443900:8053422"
-	localRuntime "curse.maven:powah-rearchitected-633483:8025339"
-	localRuntime "curse.maven:cloth-config-348521:7817583"
-	localRuntime "curse.maven:refined-storage-jei-integration-1230497:7920963"
-	localRuntime "curse.maven:sophisticated-backpacks-422301:8034904"
-	localRuntime "curse.maven:sophisticated-core-618298:8047009"
-	localRuntime "curse.maven:yeetusexperimentus-635427:7830957"
 }
 
 processResources {
