@@ -3,7 +3,7 @@ name: Build and Release
 on:
   push:
     branches:
-      - "26.1"
+      - "26.2"
 
 permissions:
   contents: write
@@ -65,8 +65,8 @@ jobs:
           curseforge-id: 1544558
           curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
           name: build+${{ github.run_number }}
-          version-type: beta
-          game-versions: 26.1.2
+          version-type: alpha
+          game-versions: 26.2
           changelog: ${{ github.event.head_commit.message }}
           loaders: fabric
           files-primary: fabric/build/libs/*+fabric.jar
@@ -78,8 +78,8 @@ jobs:
           curseforge-id: 1544558
           curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
           name: build+${{ github.run_number }}
-          version-type: beta
-          game-versions: 26.1.2
+          version-type: alpha
+          game-versions: 26.2
           changelog: ${{ github.event.head_commit.message }}
           loaders: neoforge
           files-primary: neoforge/build/libs/*+neoforge.jar
