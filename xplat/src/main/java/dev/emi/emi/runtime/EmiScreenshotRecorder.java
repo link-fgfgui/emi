@@ -51,7 +51,7 @@ public class EmiScreenshotRecorder {
 		GpuTexture colorTexture = framebuffer.getColorTexture();
 		if (colorTexture != null) {
 			try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder()
-					.createRenderPass(() -> "EMI Screenshot", framebuffer.getColorTextureView(), Optional.<Vector4fc>empty())) {
+					.createRenderPass(() -> "EMI Screenshot", framebuffer.getColorTextureView(), Optional.<Vector4fc>of(new Vector4f(0.0f, 0.0f, 0.0f, 0.0f)))) {
 				Matrix4fStack view = RenderSystem.getModelViewStack();
 				view.pushMatrix();
 				view.identity();
