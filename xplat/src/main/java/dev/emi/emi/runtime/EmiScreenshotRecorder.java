@@ -1,7 +1,7 @@
 package dev.emi.emi.runtime;
 
 import java.io.File;
-import java.util.OptionalInt;
+import java.util.Optional;
 import java.util.function.Consumer;
 import net.minecraft.util.Util;
 import net.minecraft.client.Minecraft;
@@ -22,6 +22,8 @@ import dev.emi.emi.EmiPort;
 import dev.emi.emi.config.EmiConfig;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
+import org.joml.Vector4f;
+import org.joml.Vector4fc;
 
 public class EmiScreenshotRecorder {
 	private static final String SCREENSHOTS_DIRNAME = "screenshots";
@@ -44,12 +46,12 @@ public class EmiScreenshotRecorder {
 			scale = EmiConfig.recipeScreenshotScale;
 		}
 
-		RenderTarget framebuffer = new TextureTarget("EMI Screenshot", width * scale, height * scale, true);
+		RenderTarget framebuffer = new TextureTarget("EMI Screenshot", width * scale, height * scale, true, com.mojang.blaze3d.GpuFormat.RGBA8_UNORM);
 
 		GpuTexture colorTexture = framebuffer.getColorTexture();
 		if (colorTexture != null) {
 			try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder()
-					.createRenderPass(() -> "EMI Screenshot", framebuffer.getColorTextureView(), OptionalInt.of(0))) {
+					.createRenderPass(() -> "EMI Screenshot", framebuffer.getColorTextureView(), Optional.<Vector4fc>empty())) {
 				Matrix4fStack view = RenderSystem.getModelViewStack();
 				view.pushMatrix();
 				view.identity();
@@ -61,7 +63,7 @@ public class EmiScreenshotRecorder {
 				ProjectionType backupProjType = RenderSystem.getProjectionType();
 
 				GpuBuffer projBuf = RenderSystem.getDevice().createBuffer(() -> "EMI Projection", GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_MAP_WRITE, 64);
-				try (GpuBuffer.MappedView mapped = RenderSystem.getDevice().createCommandEncoder().mapBuffer(projBuf, false, true)) {
+				try (GpuBufferSlice.MappedView mapped = projBuf.map(false, true)) {
 					new Matrix4f().identity().get(mapped.data());
 				}
 				RenderSystem.setProjectionMatrix(projBuf.slice(), ProjectionType.ORTHOGRAPHIC);
@@ -75,7 +77,7 @@ public class EmiScreenshotRecorder {
 		}
 
 		saveScreenshotInner(client.gameDirectory, path, framebuffer,
-			message -> client.execute(() -> client.gui.getChat().addClientSystemMessage(message)));
+			message -> client.execute(() -> client.gui.hud.getChat().addClientSystemMessage(message)));
 	}
 
 	private static void saveScreenshotInner(File gameDirectory, String suggestedPath, RenderTarget framebuffer, Consumer<Component> messageReceiver) {
@@ -115,15 +117,15 @@ public class EmiScreenshotRecorder {
 		}
 		int usage = GpuBuffer.USAGE_MAP_READ | GpuBuffer.USAGE_COPY_DST;
 		GpuBuffer gpubuffer = RenderSystem.getDevice()
-			.createBuffer(() -> "EMI Screenshot buffer", usage, i * j * gputexture.getFormat().pixelSize());
+			.createBuffer(() -> "EMI Screenshot buffer", usage, i * j * gputexture.getFormat().blockSize());
 		CommandEncoder commandencoder = RenderSystem.getDevice().createCommandEncoder();
 		commandencoder.copyTextureToBuffer(gputexture, gpubuffer, 0, () -> {
-			try (GpuBuffer.MappedView mappedview = commandencoder.mapBuffer(gpubuffer, true, false)) {
+			try (GpuBufferSlice.MappedView mappedview = gpubuffer.map(true, false)) {
 				NativeImage nativeimage = new NativeImage(i, j, false);
 
 				for (int i1 = 0; i1 < j; i1++) {
 					for (int j1 = 0; j1 < i; j1++) {
-						int k1 = mappedview.data().getInt((j1 + i1 * i) * gputexture.getFormat().pixelSize());
+						int k1 = mappedview.data().getInt((j1 + i1 * i) * gputexture.getFormat().blockSize());
 						nativeimage.setPixelABGR(j1, j - i1 - 1, k1 | 0xFF000000);
 					}
 				}

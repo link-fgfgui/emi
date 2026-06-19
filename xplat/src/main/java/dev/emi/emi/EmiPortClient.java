@@ -79,10 +79,10 @@ public class EmiPortClient {
 
     public static void focus(EditBox widget, boolean focused) {
         Minecraft client = Minecraft.getInstance();
-        if (client != null && client.screen != null) {
-            var currentFocus = client.screen.getFocused();
+        if (client != null && client.gui.screen() != null) {
+            var currentFocus = client.gui.screen().getFocused();
             if (!focused && currentFocus == widget || focused && currentFocus != widget) {
-                client.screen.setFocused(null);
+                client.gui.screen().setFocused(null);
             }
         }
         widget.setFocused(focused);

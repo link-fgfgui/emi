@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 
-import dev.emi.emi.jemi.JemiPlugin;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import com.google.common.collect.Lists;
@@ -14,7 +13,6 @@ import dev.emi.emi.api.EmiInitRegistry;
 import dev.emi.emi.api.EmiRegistry;
 import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.bom.BoM;
-import dev.emi.emi.jemi.JemiPlugin;
 import dev.emi.emi.mixinsupport.EmiMixinTransformation;
 import dev.emi.emi.platform.EmiAgnos;
 import dev.emi.emi.registry.EmiComparisonDefaults;

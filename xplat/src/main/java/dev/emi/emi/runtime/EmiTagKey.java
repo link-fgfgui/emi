@@ -7,10 +7,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet.Named;
 import net.minecraft.core.Registry;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
@@ -110,12 +110,12 @@ public class EmiTagKey<T> {
 
 	private static @Nullable String translatePrefix(String prefix, Identifier id) {
 		String s = EmiUtil.translateId(prefix, id);
-		if (I18n.exists(s)) {
+		if (Language.getInstance().has(s)) {
 			return s;
 		}
 		if (id.getNamespace().equals("forge")) {
 			s = EmiUtil.translateId(prefix, EmiPort.id("c", id.getPath()));
-			if (I18n.exists(s)) {
+			if (Language.getInstance().has(s)) {
 				return s;
 			}
 		}

@@ -5,6 +5,7 @@ import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import com.google.common.collect.Lists;
 
 import dev.emi.emi.EmiPort;
@@ -99,7 +100,7 @@ public class RecipeCostTooltipComponent implements EmiTooltipComponent {
 
 	@Override
 	public void drawTooltipText(TextRenderData text) {
-		text.draw(COST, 0, 0, ChatFormatting.GRAY.getColor(), true);
+		text.draw(COST, 0, 0, TextColor.fromLegacyFormat(ChatFormatting.GRAY).getValue(), true);
 	}
 
 	private static class Node {

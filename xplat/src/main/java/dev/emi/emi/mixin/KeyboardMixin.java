@@ -27,7 +27,7 @@ public class KeyboardMixin {
 			method = "keyPress(JILnet/minecraft/client/input/KeyEvent;)V", cancellable = true)
 	public void onKey(long window, int action, KeyEvent event, CallbackInfo info) {
 		try {
-			Screen screen = minecraft.screen;
+			Screen screen = minecraft.gui.screen();
 			if (screen instanceof AbstractContainerScreen<?> hs) {
 				if (action == 1 || action == 2) {
 					if (EmiScreenManager.keyPressed(event)) {
@@ -45,8 +45,8 @@ public class KeyboardMixin {
 	public void onChar(long window, CharacterEvent event, CallbackInfo info) {
 		try {
 			if (window == minecraft.getWindow().handle()) {
-				Screen screen = minecraft.screen;
-				if (screen instanceof AbstractContainerScreen<?> hs && this.minecraft.getOverlay() == null) {
+				Screen screen = minecraft.gui.screen();
+				if (screen instanceof AbstractContainerScreen<?> hs && this.minecraft.gui.overlay() == null) {
 					boolean consume = false;
 					consume = EmiScreenManager.search.charTyped(event) || consume;
 					if (consume) {

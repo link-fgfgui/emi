@@ -5,6 +5,7 @@ import java.util.Map;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.item.ItemStack;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -83,7 +84,7 @@ public class RemainderTooltipComponent implements EmiTooltipComponent {
 			if (chanced) {
 				Component t = EmiPort.literal(EmiTooltip.TEXT_FORMAT.format(remainder.chance * 100) + "%");
 				int tx = text.renderer.width(t);
-				text.draw(t, 27 - tx / 2, 9 + i * 18, ChatFormatting.GOLD.getColor(), false);
+				text.draw(t, 27 - tx / 2, 9 + i * 18, TextColor.fromLegacyFormat(ChatFormatting.GOLD).getValue(), false);
 			}
 		}
 	}

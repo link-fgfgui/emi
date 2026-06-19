@@ -103,7 +103,7 @@ public class EmiApi {
 	}
 
 	public static AbstractContainerScreen<?> getHandledScreen() {
-		Screen s = client.screen;
+		Screen s = client.gui.screen();
 		if (s instanceof AbstractContainerScreen<?> hs) {
 			return hs;
 		} else if (s instanceof RecipeScreen rs) {
@@ -159,33 +159,33 @@ public class EmiApi {
 	}
 
 	public static void viewRecipeTree() {
-		if (client.screen == null) {
-			client.setScreen(new InventoryScreen(client.player));
+		if (client.gui.screen() == null) {
+			client.gui.setScreen(new InventoryScreen(client.player));
 		}
-		Screen s = client.screen;
+		Screen s = client.gui.screen();
 		if (s instanceof AbstractContainerScreen<?> hs) {
 			push();
-			client.setScreen(new BoMScreen(hs));
+			client.gui.setScreen(new BoMScreen(hs));
 		} else if (s instanceof RecipeScreen rs) {
 			push();
-			client.setScreen(new BoMScreen(rs.old));
+			client.gui.setScreen(new BoMScreen(rs.old));
 		}
 	}
 
 	public static void focusRecipe(EmiRecipe recipe) {
-		if (client.screen instanceof RecipeScreen rs) {
+		if (client.gui.screen() instanceof RecipeScreen rs) {
 			rs.focusRecipe(recipe);
 		}
 	}
 
 	private static void push() {
-		if (client.screen instanceof RecipeScreen rs) {
+		if (client.gui.screen() instanceof RecipeScreen rs) {
 			EmiHistory.push(rs);
-		} else if (client.screen instanceof BoMScreen bs) {
+		} else if (client.gui.screen() instanceof BoMScreen bs) {
 			EmiHistory.push(bs);
 		} else {
 			EmiHistory.clear();
-			EmiHistory.push(client.screen);
+			EmiHistory.push(client.gui.screen());
 		}
 	}
 
@@ -243,18 +243,18 @@ public class EmiApi {
 		if (!recipes.isEmpty()) {
 			EmiSidebars.lookup(stack);
 			if (getHandledScreen() == null) {
-				client.setScreen(new InventoryScreen(client.player));
+				client.gui.setScreen(new InventoryScreen(client.player));
 			}
-			if (client.screen instanceof AbstractContainerScreen<?> hs) {
+			if (client.gui.screen() instanceof AbstractContainerScreen<?> hs) {
 				push();
-				client.setScreen(new RecipeScreen(hs, recipes));
-			} else if (client.screen instanceof BoMScreen bs) {
+				client.gui.setScreen(new RecipeScreen(hs, recipes));
+			} else if (client.gui.screen() instanceof BoMScreen bs) {
 				push();
-				client.setScreen(new RecipeScreen(bs.old, recipes));
-			} else if (client.screen instanceof RecipeScreen rs) {
+				client.gui.setScreen(new RecipeScreen(bs.old, recipes));
+			} else if (client.gui.screen() instanceof RecipeScreen rs) {
 				push();
 				RecipeScreen n = new RecipeScreen(rs.old, recipes);
-				client.setScreen(n);
+				client.gui.setScreen(n);
 				n.focusCategory(rs.getFocusedCategory());
 			}
 		}

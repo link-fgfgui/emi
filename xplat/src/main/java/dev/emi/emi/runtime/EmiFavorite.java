@@ -4,7 +4,6 @@ import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,6 +22,7 @@ import dev.emi.emi.config.HelpLevel;
 import dev.emi.emi.registry.EmiRecipeFiller;
 import dev.emi.emi.screen.MicroTextRenderer;
 import dev.emi.emi.screen.StackBatcher.Batchable;
+import dev.emi.emi.screen.StackBatcher.EmiBufferSource;
 import dev.emi.emi.screen.tooltip.RecipeTooltipComponent;
 
 public class EmiFavorite implements EmiIngredient, Batchable {
@@ -131,7 +131,7 @@ public class EmiFavorite implements EmiIngredient, Batchable {
 	}
 
 	@Override
-	public void renderForBatch(MultiBufferSource vcp, GuiGraphicsExtractor raw, int x, int y, int z, float delta) {
+	public void renderForBatch(EmiBufferSource vcp, GuiGraphicsExtractor raw, int x, int y, int z, float delta) {
 		if (stack instanceof Batchable b) {
 			b.renderForBatch(vcp, raw, x, y, z, delta);
 		}

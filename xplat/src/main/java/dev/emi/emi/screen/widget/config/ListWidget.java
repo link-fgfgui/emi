@@ -24,7 +24,6 @@ import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.vertex.Tesselator;
 import dev.emi.emi.EmiPort;
 
 public class ListWidget extends AbstractContainerEventHandler implements Renderable, NarratableEntry {
@@ -153,7 +152,6 @@ public class ListWidget extends AbstractContainerEventHandler implements Rendera
 		int m;
 		int i = this.getScrollbarPositionX();
 		int j = i + 6;
-		Tesselator tessellator = Tesselator.getInstance();
 		this.hoveredEntry = this.isMouseOver(mouseX, mouseY) ? this.getEntryAtPosition(mouseX, mouseY) : null;
 
 		{

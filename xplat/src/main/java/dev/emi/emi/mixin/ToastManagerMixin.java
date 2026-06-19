@@ -17,7 +17,7 @@ public class ToastManagerMixin {
 	@Inject(at = @At("HEAD"), method = "extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;)V", cancellable = true)
 	private void drawHead(GuiGraphicsExtractor raw, CallbackInfo info) {
 		Minecraft client = Minecraft.getInstance();
-		if (client.screen != null && EmiConfig.enabled && EmiApi.getHandledScreen() != null) {
+		if (client.gui.screen() != null && EmiConfig.enabled && EmiApi.getHandledScreen() != null) {
 			info.cancel();
 		}
 	}

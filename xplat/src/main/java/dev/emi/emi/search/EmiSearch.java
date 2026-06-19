@@ -10,6 +10,7 @@ import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.searchtree.SuffixArray;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Items;
@@ -98,7 +99,7 @@ public class EmiSearch {
 		for (Supplier<EmiAlias> supplier : EmiData.aliases) {
 			EmiAlias alias = supplier.get();
 			for (String key : alias.keys()) {
-				if (!I18n.exists(key)) {
+				if (!Language.getInstance().has(key)) {
 					EmiReloadLog.warn("Untranslated alias " + key);
 				}
 				String text = I18n.get(key).toLowerCase();

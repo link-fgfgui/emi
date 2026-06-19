@@ -16,6 +16,7 @@ import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
@@ -90,7 +91,7 @@ public class ConfigScreen extends Screen {
 	public void onClose() {
 		EmiConfig.writeConfig();
 		EmiSearch.update();
-		Minecraft.getInstance().setScreen(last);
+		Minecraft.getInstance().gui.setScreen(last);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -99,7 +100,7 @@ public class ConfigScreen extends Screen {
 		ConfigValue annot = field.getAnnotation(ConfigValue.class);
 		String key = "config.emi.tooltip." + annot.value().replace('-', '_');
 		Comment comment = field.getAnnotation(Comment.class);
-		if (I18n.exists(key)) {
+		if (Language.getInstance().has(key)) {
 			text = (List<ClientTooltipComponent>) (Object) Arrays.stream(I18n.get(key).split("\n"))
 				.map(EmiPort::literal).map(EmiTooltipComponents::of).toList();
 		} else if (comment != null) {
@@ -151,7 +152,7 @@ public class ConfigScreen extends Screen {
 		}));
 		this.addRenderableWidget(EmiPort.newButton(x + w / 2 + 2, height - 52, w / 2 - 24, 20, EmiPort.translatable("screen.emi.presets"), button -> {
 			Minecraft client = Minecraft.getInstance();
-			client.setScreen(new ConfigPresetScreen(this));
+			client.gui.setScreen(new ConfigPresetScreen(this));
 		}));
 		this.addRenderableWidget(new SizedButtonWidget(x + w - 20, height - 52, 20, 20, 164, 0, () -> true, widget -> {
 			EmiConfig.setGlobalState(!EmiConfig.useGlobalConfig);

@@ -92,7 +92,7 @@ public class ConfigPresetScreen extends Screen {
 
 	@Override
 	public void onClose() {
-		Minecraft.getInstance().setScreen(last);
+		Minecraft.getInstance().gui.setScreen(last);
 	}
 	
 	@Override

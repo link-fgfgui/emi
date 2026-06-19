@@ -122,7 +122,7 @@ public class EmiRecipeFiller {
 				EmiSidebars.craft(recipe);
 				boolean crafted = handler.craft(recipe, context);
 				if (crafted) {
-					Minecraft.getInstance().setScreen(screen);
+					Minecraft.getInstance().gui.setScreen(screen);
 				}
 				return crafted;
 			}
