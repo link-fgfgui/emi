@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 
+import dev.emi.emi.jemi.JemiPlugin;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import com.google.common.collect.Lists;
@@ -156,6 +157,9 @@ public class EmiReloadManager {
 					plugins.addAll(EmiAgnos.getPlugins().stream()
 						.sorted((a, b) -> Integer.compare(entrypointPriority(a), entrypointPriority(b))).toList());
 
+					if (EmiAgnos.isModLoaded("jei")) {
+						plugins.add(new EmiPluginContainer(new JemiPlugin(), "jemi"));
+					}
 					EmiInitRegistry initRegistry = new EmiInitRegistryImpl();
 					for (EmiPluginContainer container : plugins) {
 						step(EmiPort.literal("Initializing plugin from " + container.id()), 5_000);

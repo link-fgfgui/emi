@@ -4,15 +4,6 @@ architectury {
 	common(rootProject.enabled_platforms.split(","))
 }
 
-sourceSets {
-	main {
-		java {
-			exclude 'dev/emi/emi/mixin/jei/**'
-			exclude 'dev/emi/emi/jemi/**'
-		}
-	}
-}
-
 loom {
 	accessWidenerPath = file("src/main/resources/emi.accesswidener")
 }
