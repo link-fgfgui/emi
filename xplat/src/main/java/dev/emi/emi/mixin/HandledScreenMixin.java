@@ -1,7 +1,5 @@
 package dev.emi.emi.mixin;
 
-import org.spongepowered.asm.mixin.Dynamic;
-import org.spongepowered.asm.mixin.Intrinsic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -29,21 +27,6 @@ public abstract class HandledScreenMixin extends Screen {
 	protected int backgroundWidth, backgroundHeight, x, y;
 
 	private HandledScreenMixin() { super(null); }
-
-	@Intrinsic @Override
-	public void renderBackground(MatrixStack raw) {
-		super.renderBackground(raw);
-	}
-
-	@Dynamic
-	@Inject(at = @At("RETURN"), method = "renderBackground(Lnet/minecraft/client/util/math/MatrixStack;)V")
-	private void renderBackground(MatrixStack raw, CallbackInfo info) {
-		EmiDrawContext context = EmiDrawContext.wrap(raw);
-		Window window = client.getWindow();
-		int mouseX = (int) (client.mouse.getX() * window.getScaledWidth() / window.getWidth());
-		int mouseY = (int) (client.mouse.getY() * window.getScaledHeight() / window.getHeight());
-		EmiScreenManager.drawBackground(context, mouseX, mouseY, client.getTickDelta());
-	}
 
 	@Inject(at = @At(value = "INVOKE",
 			target = "net/minecraft/client/gui/screen/ingame/HandledScreen.drawForeground(Lnet/minecraft/client/util/math/MatrixStack;II)V",

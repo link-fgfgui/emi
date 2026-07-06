@@ -19,7 +19,6 @@ import dev.emi.emi.api.EmiRegistry;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.stack.FluidEmiStack;
-import dev.emi.emi.jemi.JemiUtil;
 import dev.emi.emi.mixin.accessor.BakedModelManagerAccessor;
 import dev.emi.emi.mixin.accessor.BrewingRecipeRegistryRecipeAccessor;
 import dev.emi.emi.platform.EmiAgnos;
@@ -231,7 +230,7 @@ public class EmiAgnosFabric extends EmiAgnos {
 
 	@Override
 	protected EmiStack createFluidStackAgnos(Object object) {
-		return JemiUtil.getFluidFromJei(object);
+		return EmiStack.EMPTY;
 	}
 
 	@Override

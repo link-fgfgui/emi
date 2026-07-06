@@ -11,6 +11,17 @@ loom {
 	accessWidenerPath = file("src/main/resources/emi.accesswidener")
 }
 
+// JEMI (JEI integration) uses JEI APIs that only exist in JEI 11+ (MC 1.19+).
+// For the 1.18.2 build (JEI 10.x) the jemi package is excluded from compilation.
+sourceSets {
+	main {
+		java {
+			exclude 'dev/emi/emi/jemi/**'
+			exclude 'dev/emi/emi/mixin/jei/**'
+		}
+	}
+}
+
 dependencies {
 	minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
 	mappings "net.fabricmc:yarn:${rootProject.yarn_mappings}:v2"

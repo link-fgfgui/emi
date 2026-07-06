@@ -1,5 +1,12 @@
-name: Build
-on: [ pull_request, push ]
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - "1.18.2-arch"
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -10,14 +17,16 @@ jobs:
     steps:
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      - name: setup JDK${{ matrix.java }}
-        uses: actions/setup-java@v1
+      - name: Setup JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
         with:
           java-version: ${{ matrix.java }}
+          distribution: 'temurin' 
 
-      - uses: actions/cache@v4
+      - name: Setup Gradle Cache
+        uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
@@ -26,16 +35,52 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/gradle-wrapper.properties') }}
           restore-keys: ${{ runner.os }}-gradle
 
-      - name: Build Fabric
-        run: ./gradlew :fabric:build
-
-      - name: Build Forge
-        run: ./gradlew :forge:build
+      - name: Build
+        run: ./gradlew build
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4.4.0
         with:
           name: Artifacts
           path: |
+            xplat/build/libs/
             fabric/build/libs/
-            forge/build/libs/
+            forge/build/libs/ 
+
+      - name: Create Release and Upload Artifacts
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.run_number }}
+          name: build+${{ github.run_number }}
+          files: |
+            xplat/build/libs/*
+            fabric/build/libs/*
+            forge/build/libs/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: publish fabric
+        uses: apehum/mc-publish@v1.2
+        with:
+          curseforge-id: 1544558
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          name: build+${{ github.run_number }}
+          version-type: alpha
+          game-versions: 1.18.2
+          changelog: ${{ github.event.head_commit.message }}
+          loaders: fabric
+          files-primary: fabric/build/libs/*+fabric.jar
+          files-secondary: fabric/build/libs/!(*filtered*)-@(api|sources).jar
+
+      - name: publish forge
+        uses: apehum/mc-publish@v1.2
+        with:
+          curseforge-id: 1544558
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          name: build+${{ github.run_number }}
+          version-type: alpha
+          game-versions: 1.18.2
+          changelog: ${{ github.event.head_commit.message }}
+          loaders: forge
+          files-primary: forge/build/libs/*+forge.jar
+          files-secondary: forge/build/libs/!(*filtered*)-@(api|sources).jar

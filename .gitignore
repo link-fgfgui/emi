@@ -21,3 +21,6 @@ bin/
 run/
 
 .architectury-transformer/
+
+#反编译源码备用
+lib-src/
