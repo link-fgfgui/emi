@@ -55,7 +55,7 @@ public class JemiRecipesGui implements IRecipesGui {
 	@Override
 	public <T> Optional<T> getIngredientUnderMouse(IIngredientType<T> ingredientType) {
 		Minecraft client = Minecraft.getInstance();
-		if (client.screen instanceof RecipeScreen screen) {
+		if (client.gui.screen() instanceof RecipeScreen screen) {
 			EmiIngredient stack = screen.getHoveredStack();
 			if (!stack.isEmpty()) {
 				Optional<ITypedIngredient<?>> opt = JemiUtil.getTyped(stack.getEmiStacks().get(0));
@@ -67,7 +67,7 @@ public class JemiRecipesGui implements IRecipesGui {
 		return Optional.empty();
 	}
 
-	//@Override
+	@Override
 	public Optional<Screen> getParentScreen() {
 		return Optional.empty();
 	}

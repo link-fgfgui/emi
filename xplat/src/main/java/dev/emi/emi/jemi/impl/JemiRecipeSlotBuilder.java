@@ -19,6 +19,7 @@ import mezz.jei.api.ingredients.IIngredientType;
 import mezz.jei.api.ingredients.ITypedIngredient;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -33,13 +34,18 @@ public class JemiRecipeSlotBuilder implements IRecipeSlotBuilder {
 	public Optional<String> name = Optional.empty();
 	public IRecipeSlotRichTooltipCallback richTooltipCallback;
 	public OffsetDrawable background, overlay;
-	public Map<IIngredientType<?>, IngredientRenderer<?>> renderers; 
+	public Map<IIngredientType<?>, IngredientRenderer<?>> renderers;
 	public TankInfo tankInfo;
 
 	public JemiRecipeSlotBuilder(RecipeIngredientRole role, int x, int y) {
 		this.acceptor = new JemiIngredientAcceptor(role);
 		this.x = x;
 		this.y = y;
+	}
+
+	@Override
+	public ContextMap getContextMap() {
+		return acceptor.getContextMap();
 	}
 
 	@Override

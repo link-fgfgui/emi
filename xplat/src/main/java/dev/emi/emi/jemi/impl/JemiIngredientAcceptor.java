@@ -29,6 +29,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 import net.minecraft.world.level.ItemLike;
@@ -41,6 +42,15 @@ public class JemiIngredientAcceptor implements IIngredientAcceptor<JemiIngredien
 
 	public JemiIngredientAcceptor(RecipeIngredientRole role) {
 		this.role = role;
+	}
+
+	@Override
+	public ContextMap getContextMap() {
+		Minecraft mc = Minecraft.getInstance();
+		if (mc.level != null) {
+			return SlotDisplayContext.fromLevel(mc.level);
+		}
+		return new ContextMap.Builder().create(SlotDisplayContext.CONTEXT);
 	}
 
 	@SuppressWarnings({"rawtypes", "unchecked"})
@@ -90,11 +100,8 @@ public class JemiIngredientAcceptor implements IIngredientAcceptor<JemiIngredien
 
 	@Override
 	public JemiIngredientAcceptor add(SlotDisplay display) {
-		Minecraft mc = Minecraft.getInstance();
-		if (mc.level != null) {
-			for (ItemStack stack : display.resolveForStacks(SlotDisplayContext.fromLevel(mc.level))) {
-				addStack(EmiStack.of(stack));
-			}
+		for (ItemStack stack : display.resolveForStacks(getContextMap())) {
+			addStack(EmiStack.of(stack));
 		}
 		return this;
 	}

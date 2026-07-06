@@ -108,7 +108,7 @@ public class JemiRecipeHandler<T extends AbstractContainerMenu, R> implements Em
 	public boolean craft(EmiRecipe recipe, EmiCraftContext<T> context) {
 		IRecipeTransferError err = jeiCraft(recipe, context, true, null);
 		if (err == null || err.getType().allowsTransfer) {
-			Minecraft.getInstance().setScreen(context.getScreen());
+			Minecraft.getInstance().gui.setScreen(context.getScreen());
 		}
 		return err == null || err.getType().allowsTransfer;
 	}
