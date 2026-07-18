@@ -70,8 +70,9 @@ jobs:
           changelog: ${{ github.event.head_commit.message }}
           loaders: fabric
           environment: client | server
-          files-primary: fabric/build/libs/*+fabric.jar
-          files-secondary: fabric/build/libs/!(*filtered*)-@(api|sources).jar
+          files: |
+            fabric/build/libs/*+fabric.jar
+            fabric/build/libs/!(*filtered*)-@(api|sources).jar
 
       - name: publish neo
         uses: Kira-NT/mc-publish@v3.3.1
@@ -84,5 +85,7 @@ jobs:
           changelog: ${{ github.event.head_commit.message }}
           loaders: neoforge
           environment: client | server
-          files-primary: neoforge/build/libs/*+neoforge.jar
-          files-secondary: neoforge/build/libs/!(*filtered*)-@(api|sources).jar
+          files: |
+            neoforge/build/libs/*+neoforge.jar
+            neoforge/build/libs/!(*filtered*)-@(api|sources).jar
+
