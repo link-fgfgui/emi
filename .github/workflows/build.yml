@@ -60,7 +60,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: publish fabric
-        uses: apehum/mc-publish@v1.2
+        uses: Kira-NT/mc-publish@v3.3.1
         with:
           curseforge-id: 1544558
           curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
@@ -69,11 +69,12 @@ jobs:
           game-versions: 26.2
           changelog: ${{ github.event.head_commit.message }}
           loaders: fabric
+          environment: client | server
           files-primary: fabric/build/libs/*+fabric.jar
           files-secondary: fabric/build/libs/!(*filtered*)-@(api|sources).jar
 
       - name: publish neo
-        uses: apehum/mc-publish@v1.2
+        uses: Kira-NT/mc-publish@v3.3.1
         with:
           curseforge-id: 1544558
           curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
@@ -82,5 +83,6 @@ jobs:
           game-versions: 26.2
           changelog: ${{ github.event.head_commit.message }}
           loaders: neoforge
+          environment: client | server
           files-primary: neoforge/build/libs/*+neoforge.jar
           files-secondary: neoforge/build/libs/!(*filtered*)-@(api|sources).jar

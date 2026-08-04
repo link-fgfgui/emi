@@ -33,7 +33,6 @@ public abstract class HandledScreenMixin extends Screen {
 		context.push();
 		context.matrices().translate(-leftPos, -topPos);
 		EmiScreenManager.render(context, mouseX, mouseY, delta);
-		EmiScreenManager.drawForeground(context, mouseX, mouseY, delta);
 		context.pop();
 	}
 
@@ -44,6 +43,12 @@ public abstract class HandledScreenMixin extends Screen {
 			return;
 		}
 		EmiDrawContext context = EmiDrawContext.wrap(raw);
+		context.push();
+		// Run after extractContents/extractCarriedItem/extractSnapbackItem/extractTooltip
+		// so the dragged stack's nextStratum() lands above slot items and the
+		// vanilla carried item — matching NeoForge's ScreenEvent.Render.Post path.
+		EmiScreenManager.drawForeground(context, mouseX, mouseY, delta);
+		context.pop();
 		context.flushDeferredTooltips();
 	}
 }

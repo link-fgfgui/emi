@@ -58,8 +58,11 @@ public class IntEdit {
 	}
 
 	public void setPosition(int x, int y) {
-		text.x = x + 1;
-		text.y = y + 1;
+		// setX/setY triggers EditBox.updateTextPosition(), which
+		// refreshes the textX/textY render cache. Direct field writes
+		// skip it and the value only renders after a click refocus.
+		text.setX(x + 1);
+		text.setY(y + 1);
 		up.x = x + text.getWidth() + 2;
 		up.y = y;
 		down.x = up.x;
