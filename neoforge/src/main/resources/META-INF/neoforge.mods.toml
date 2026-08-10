@@ -17,7 +17,7 @@ authors = "Emi"
 description = '''
 A featureful and accessible item and recipe viewer
 '''
-logoFile = "icon.png"
+iconFile = "icon.png"
 
 [[dependencies.emi]]
 modId="neoforge"
