@@ -22,7 +22,6 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.NeoForgeRenderTypes;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.ContainerScreenEvent;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RecipesReceivedEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
@@ -72,15 +71,16 @@ public class EmiClientNeoForge {
 		EmiAgnosNeoForge.setReceivedRecipeMap(null);
 	}
 
-	public static void renderScreenForeground(ContainerScreenEvent.Render.Foreground event) {
+	public static void renderScreenForeground(ScreenEvent.Render.Foreground event) {
 		EmiDrawContext context = EmiDrawContext.wrap(event.getGuiGraphics());
-		AbstractContainerScreen<?> screen = event.getContainerScreen();
+		Screen screen = event.getScreen();
+		if (!(screen instanceof AbstractContainerScreen<?>)) {
+			return;
+		}
 		EmiScreenBase base = EmiScreenBase.of(screen);
 		if (base != null) {
-			Minecraft client = Minecraft.getInstance();
 			context.push();
-			context.matrices().translate(-screen.getLeftPos(), -screen.getTopPos());
-			EmiScreenManager.render(context, event.getMouseX(), event.getMouseY(), client.getDeltaTracker().getGameTimeDeltaPartialTick(false));
+			EmiScreenManager.render(context, event.getMouseX(), event.getMouseY(), event.getPartialTick());
 			context.pop();
 		}
 	}
