@@ -26,6 +26,7 @@ public class JemiScrollGridWidget implements IScrollGridWidget {
 		this.gridHeight = gridHeight;
 		this.width = gridWidth * 18 + SCROLL_BAR_WIDTH;
 		this.height = gridHeight * 18;
+		layoutSlots();
 	}
 
 	@Override
@@ -43,6 +44,7 @@ public class JemiScrollGridWidget implements IScrollGridWidget {
 	public IScrollGridWidget setPosition(int xPos, int yPos) {
 		this.x = xPos;
 		this.y = yPos;
+		layoutSlots();
 		return this;
 	}
 
@@ -66,5 +68,25 @@ public class JemiScrollGridWidget implements IScrollGridWidget {
 	@Override
 	public ScreenRectangle getScreenRectangle() {
 		return new ScreenRectangle(getPosition(), getWidth(), getHeight());
+	}
+
+	private void layoutSlots() {
+		if (slots == null) {
+			return;
+		}
+		for (int i = 0; i < slots.size(); i++) {
+			int col = i % gridWidth;
+			int row = i / gridWidth;
+			int cellX = x + col * 18;
+			int cellY = y + row * 18;
+			slots.get(i).setPosition(cellX + 1, cellY + 1);
+		}
+	}
+
+	public int getOccupiedRows() {
+		if (slots == null || slots.isEmpty() || gridWidth <= 0) {
+			return 0;
+		}
+		return (slots.size() + gridWidth - 1) / gridWidth;
 	}
 }

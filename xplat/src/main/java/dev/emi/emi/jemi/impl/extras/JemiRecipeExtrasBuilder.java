@@ -5,6 +5,7 @@ import java.util.List;
 import com.google.common.collect.Lists;
 
 import dev.emi.emi.api.render.EmiTexture;
+import dev.emi.emi.jemi.impl.JemiRecipeSlotDrawablesView;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotDrawablesView;
@@ -25,13 +26,17 @@ public class JemiRecipeExtrasBuilder implements IRecipeExtrasBuilder {
 	public List<IJeiInputHandler> inputHandlers = Lists.newArrayList();
 	public List<IJeiGuiEventListener> eventListeners = Lists.newArrayList();
 	public List<JemiWidgetBuilder> widgets = Lists.newArrayList();
+	public List<JemiScrollGridWidget> scrollGrids = Lists.newArrayList();
 
 	public JemiRecipeExtrasBuilder(IRecipeSlotDrawablesView slots) {
-		this.slots = slots;
+		this.slots = slots != null ? slots : new JemiRecipeSlotDrawablesView();
 	}
 
 	@Override
 	public IRecipeSlotDrawablesView getRecipeSlots() {
+		if (slots == null) {
+			slots = new JemiRecipeSlotDrawablesView();
+		}
 		return slots;
 	}
 
@@ -98,7 +103,9 @@ public class JemiRecipeExtrasBuilder implements IRecipeExtrasBuilder {
 
 	@Override
 	public IScrollGridWidget addScrollGridWidget(List<IRecipeSlotDrawable> slots, int columns, int visibleRows) {
-		return new JemiScrollGridWidget(slots, 0, 0, columns, visibleRows);
+		JemiScrollGridWidget grid = new JemiScrollGridWidget(slots, 0, 0, columns, visibleRows);
+		scrollGrids.add(grid);
+		return grid;
 	}
 
 	@Override

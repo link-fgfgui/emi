@@ -6,6 +6,7 @@ import dev.emi.emi.EmiPort;
 import dev.emi.emi.EmiUtil;
 import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.api.recipe.EmiRecipeCategory;
+import dev.emi.emi.api.render.EmiTexture;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.Bounds;
@@ -15,9 +16,11 @@ import dev.emi.emi.jemi.impl.JemiIngredientAcceptor;
 import dev.emi.emi.jemi.impl.JemiRecipeLayoutBuilder;
 import dev.emi.emi.jemi.impl.JemiRecipeSlot;
 import dev.emi.emi.jemi.impl.JemiRecipeSlotBuilder;
+import dev.emi.emi.jemi.impl.JemiRecipeSlotDrawablesView;
 import dev.emi.emi.jemi.impl.JemiRecipeSlotsView;
 import dev.emi.emi.jemi.impl.JemiTooltipBuilder;
 import dev.emi.emi.jemi.impl.extras.JemiRecipeExtrasBuilder;
+import dev.emi.emi.jemi.impl.extras.JemiScrollGridWidget;
 import dev.emi.emi.jemi.impl.extras.JemiWidgetBuilder;
 import dev.emi.emi.jemi.widget.JemiSlotWidget;
 import dev.emi.emi.jemi.widget.JemiTankWidget;
@@ -151,10 +154,24 @@ public class JemiRecipe<T> implements EmiRecipe {
 		for (JemiRecipeSlotBuilder jrsb : builder.slots) {
 			jrsb.acceptor.coerceStacks(jrsb.richTooltipCallback, jrsb.renderers);
 		}
+		List<JemiRecipeSlot> slots = builder.slots.stream().map(JemiRecipeSlot::new).toList();
 		if (opt.isPresent()) {
 			widgets.add(new JemiWidget(0, 0, getDisplayWidth(), getDisplayHeight(), opt.get()));
-			for (JemiRecipeSlotBuilder sb : builder.slots) {
-				JemiRecipeSlot slot = new JemiRecipeSlot(sb);
+		}
+		try {
+			JemiRecipeExtrasBuilder extras = new JemiRecipeExtrasBuilder(new JemiRecipeSlotDrawablesView(slots));
+			category.createRecipeExtras(extras, recipe, JemiPlugin.runtime.getJeiHelpers().getFocusFactory().getEmptyFocusGroup());
+			for (JemiWidgetBuilder b : extras.widgets) {
+				b.addWidgets(widgets);
+			}
+			for (JemiScrollGridWidget grid : extras.scrollGrids) {
+				addScrollGridBackground(widgets, grid);
+			}
+		} catch(Throwable t) {
+			EmiLog.error("Exception adding JEMI extras", t);
+		}
+		if (opt.isPresent()) {
+			for (JemiRecipeSlot slot : slots) {
 				boolean isCatalyst = catalystSlotNames.contains(slot.name.orElse(""));
 				if (slot.tankInfo != null && !slot.getIngredients(JemiUtil.getFluidType()).toList().isEmpty()) {
 					JemiTankWidget widget = new JemiTankWidget(slot, this);
@@ -167,14 +184,18 @@ public class JemiRecipe<T> implements EmiRecipe {
 				}
 			}
 		}
-		try {
-			JemiRecipeExtrasBuilder extras = new JemiRecipeExtrasBuilder(null);
-			category.createRecipeExtras(extras, recipe, JemiPlugin.runtime.getJeiHelpers().getFocusFactory().getEmptyFocusGroup());
-			for (JemiWidgetBuilder b : extras.widgets) {
-				b.addWidgets(widgets);
-			}
-		} catch(Throwable t) {
-			EmiLog.error("Exception adding JEMI extras", t);
+	}
+
+	private void addScrollGridBackground(WidgetHolder widgets, JemiScrollGridWidget grid) {
+		if (grid.slots == null) {
+			return;
+		}
+		int count = grid.slots.size();
+		int cellSize = 18;
+		for (int i = 0; i < count; i++) {
+			int col = i % grid.gridWidth;
+			int row = i / grid.gridWidth;
+			widgets.addTexture(EmiTexture.SLOT, grid.x + col * cellSize, grid.y + row * cellSize);
 		}
 	}
 
